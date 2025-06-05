@@ -30,7 +30,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = AdminPlanController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(controllers = AdminPlanController.class)
 class AdminPlanControllerTest {
 
     @Autowired
@@ -38,6 +38,12 @@ class AdminPlanControllerTest {
 
     @MockBean
     private PlanService planService;
+
+    @MockBean
+    private com.ahamo.security.jwt.JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private com.ahamo.security.service.CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -112,9 +118,9 @@ class AdminPlanControllerTest {
                 .andExpect(jsonPath("$.id").value("plan_test_001"))
                 .andExpect(jsonPath("$.name").value("テストプラン"))
                 .andExpect(jsonPath("$.version").value("1.0.0"))
-                .andExpect(jsonPath("$.is_current_version").value(true))
-                .andExpect(jsonPath("$.created_by").value("admin@example.com"))
-                .andExpect(jsonPath("$.approval_status").value("APPROVED"));
+                .andExpect(jsonPath("$.isCurrentVersion").value(true))
+                .andExpect(jsonPath("$.createdBy").value("admin@example.com"))
+                .andExpect(jsonPath("$.approvalStatus").value("APPROVED"));
     }
 
     @Test
@@ -137,7 +143,7 @@ class AdminPlanControllerTest {
                 .andExpect(jsonPath("$.id").value("plan_test_001"))
                 .andExpect(jsonPath("$.name").value("更新されたプラン"))
                 .andExpect(jsonPath("$.version").value("1.1.0"))
-                .andExpect(jsonPath("$.change_reason").value("プラン名変更"));
+                .andExpect(jsonPath("$.changeReason").value("プラン名変更"));
     }
 
     @Test
@@ -161,25 +167,23 @@ class AdminPlanControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].version").value("1.0.0"))
-                .andExpect(jsonPath("$[0].change_reason").value("新規プラン作成"))
-                .andExpect(jsonPath("$[0].created_by").value("admin@example.com"))
-                .andExpect(jsonPath("$[0].is_current_version").value(true));
+                .andExpect(jsonPath("$[0].changeReason").value("新規プラン作成"))
+                .andExpect(jsonPath("$[0].createdBy").value("admin@example.com"))
+                .andExpect(jsonPath("$[0].isCurrentVersion").value(true));
     }
 
     @Test
-    void createPlan_Unauthorized_ReturnsUnauthorized() throws Exception {
+    void createPlan_Unauthorized_ReturnsForbidden() throws Exception {
         mockMvc.perform(post("/api/v1/admin/plans")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(adminPlanRequest)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "USER")
     void createPlan_InsufficientRole_ReturnsForbidden() throws Exception {
         mockMvc.perform(post("/api/v1/admin/plans")
-                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(adminPlanRequest)))
                 .andExpect(status().isForbidden());
