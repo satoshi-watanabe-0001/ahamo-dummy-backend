@@ -1,0 +1,1446 @@
+openapi: 3.0.3
+info:
+  title: オンライン契約システム Core API
+  description: |
+    スマホ・携帯プランオンライン契約システムのCore API仕様
+    
+    SCRUM-77: API仕様統一設計 - フロント・バックエンド間インターフェース詳細設計
+    Parent Epic: SCRUM-30 - オンライン契約システム
+    
+    ## 機能概要
+    - プラン選択・比較 (3種類)
+    - 機種選択・検索 (20機種対応)
+    - オプション選択
+    - 契約手続き (個人情報、eKYC、電子署名)
+    - 決済・配送
+    - MNP対応
+    
+    ## API設計原則
+    - RESTful設計
+    - JSON形式での通信
+    - 統一的なエラーハンドリング
+    - セキュアな認証・認可
+    - レスポンシブ対応
+  version: "1.0.0"
+  contact:
+    name: オンライン契約システム開発チーム
+    email: api-support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.online-contract.example.com/v1
+    description: 本番環境
+  - url: https://api-staging.online-contract.example.com/v1
+    description: ステージング環境
+  - url: http://localhost:3000/v1
+    description: 開発環境
+
+# セキュリティ設定
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+# 共通パス定義
+paths:
+  # ========================================
+  # 認証・ユーザー管理
+  # ========================================
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: ユーザーログイン
+      description: 既存ユーザーのログイン処理
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: トークンリフレッシュ
+      description: アクセストークンの更新
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: トークン更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users/profile:
+    get:
+      tags:
+        - User Management
+      summary: ユーザープロフィール取得
+      description: ログインユーザーのプロフィール情報を取得
+      responses:
+        '200':
+          description: プロフィール情報
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ========================================
+  # プラン管理
+  # ========================================
+  /plans:
+    get:
+      tags:
+        - Plans
+      summary: プラン一覧取得
+      description: 利用可能なプラン一覧を取得（3種類）
+      security: []
+      parameters:
+        - name: active_only
+          in: query
+          description: アクティブなプランのみ取得
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: プラン一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plans:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Plan'
+                  total:
+                    type: integer
+                    example: 3
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /plans/{planId}:
+    get:
+      tags:
+        - Plans
+      summary: プラン詳細取得
+      description: 指定プランの詳細情報を取得
+      security: []
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          description: プランID
+          schema:
+            type: string
+            example: "plan_basic_001"
+      responses:
+        '200':
+          description: プラン詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanDetail'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ========================================
+  # 機種管理
+  # ========================================
+  /devices:
+    get:
+      tags:
+        - Devices
+      summary: 機種一覧取得
+      description: 利用可能な機種一覧を取得（20機種対応）
+      security: []
+      parameters:
+        - name: category
+          in: query
+          description: 機種カテゴリフィルタ
+          required: false
+          schema:
+            type: string
+            enum: [iPhone, Android]
+        - name: price_range
+          in: query
+          description: 価格帯フィルタ
+          required: false
+          schema:
+            type: string
+            enum: [entry, mid, premium]
+        - name: color
+          in: query
+          description: カラーフィルタ
+          required: false
+          schema:
+            type: string
+        - name: in_stock
+          in: query
+          description: 在庫あり機種のみ
+          required: false
+          schema:
+            type: boolean
+            default: true
+        - name: page
+          in: query
+          description: ページ番号
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: 1ページあたりの件数
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        '200':
+          description: 機種一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /devices/{deviceId}:
+    get:
+      tags:
+        - Devices
+      summary: 機種詳細取得
+      description: 指定機種の詳細情報を取得
+      security: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          description: 機種ID
+          schema:
+            type: string
+            example: "device_iphone15_001"
+      responses:
+        '200':
+          description: 機種詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceDetail'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /devices/{deviceId}/inventory:
+    get:
+      tags:
+        - Devices
+      summary: 機種在庫確認
+      description: 指定機種の在庫状況を確認
+      security: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          description: 機種ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 在庫情報
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryStatus'
+
+  # ========================================
+  # オプション管理
+  # ========================================
+  /options:
+    get:
+      tags:
+        - Options
+      summary: オプション一覧取得
+      description: 利用可能なオプション一覧を取得
+      security: []
+      parameters:
+        - name: category
+          in: query
+          description: オプションカテゴリ
+          required: false
+          schema:
+            type: string
+            enum: [insurance, accessory, service]
+        - name: device_compatible
+          in: query
+          description: 指定機種対応オプションのみ
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: オプション一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  options:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Option'
+                  total:
+                    type: integer
+
+  # ========================================
+  # 契約管理
+  # ========================================
+  /contracts:
+    post:
+      tags:
+        - Contracts
+      summary: 契約作成
+      description: 新規契約を作成（途中保存含む）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractCreateRequest'
+      responses:
+        '201':
+          description: 契約作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      tags:
+        - Contracts
+      summary: 契約一覧取得
+      description: ユーザーの契約一覧を取得
+      parameters:
+        - name: status
+          in: query
+          description: 契約ステータスフィルタ
+          required: false
+          schema:
+            type: string
+            enum: [draft, pending, active, cancelled]
+      responses:
+        '200':
+          description: 契約一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contracts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Contract'
+
+  /contracts/{contractId}:
+    get:
+      tags:
+        - Contracts
+      summary: 契約詳細取得
+      description: 指定契約の詳細情報を取得
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          description: 契約ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 契約詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractDetail'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Contracts
+      summary: 契約更新
+      description: 契約情報を更新（途中保存）
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          description: 契約ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractUpdateRequest'
+      responses:
+        '200':
+          description: 契約更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /contracts/{contractId}/submit:
+    post:
+      tags:
+        - Contracts
+      summary: 契約確定
+      description: 契約内容を確定し、eKYC・電子署名を完了
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          description: 契約ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractSubmitRequest'
+      responses:
+        '200':
+          description: 契約確定成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractSubmitResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  # ========================================
+  # eKYC・本人確認
+  # ========================================
+  /ekyc/session:
+    post:
+      tags:
+        - eKYC
+      summary: eKYCセッション開始
+      description: 本人確認セッションを開始
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EkycSessionRequest'
+      responses:
+        '201':
+          description: eKYCセッション作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EkycSessionResponse'
+
+  /ekyc/session/{sessionId}/status:
+    get:
+      tags:
+        - eKYC
+      summary: eKYCセッション状態確認
+      description: 本人確認の進捗状況を確認
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          description: eKYCセッションID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: eKYC状態
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EkycStatusResponse'
+
+  # ========================================
+  # 決済管理
+  # ========================================
+  /payments/methods:
+    get:
+      tags:
+        - Payments
+      summary: 決済方法一覧取得
+      description: 利用可能な決済方法を取得
+      security: []
+      responses:
+        '200':
+          description: 決済方法一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment_methods:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentMethod'
+
+  /payments/process:
+    post:
+      tags:
+        - Payments
+      summary: 決済処理
+      description: 契約の決済を処理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: 決済処理成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+  # ========================================
+  # 配送管理
+  # ========================================
+  /shipping/addresses:
+    get:
+      tags:
+        - Shipping
+      summary: 配送先住所一覧取得
+      description: ユーザーの登録済み配送先住所を取得
+      responses:
+        '200':
+          description: 配送先住所一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  addresses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShippingAddress'
+
+    post:
+      tags:
+        - Shipping
+      summary: 配送先住所登録
+      description: 新しい配送先住所を登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingAddressRequest'
+      responses:
+        '201':
+          description: 配送先住所登録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingAddress'
+
+  # ========================================
+  # MNP管理
+  # ========================================
+  /mnp/eligibility:
+    post:
+      tags:
+        - MNP
+      summary: MNP利用可能性確認
+      description: 番号ポータビリティの利用可能性を確認
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MnpEligibilityRequest'
+      responses:
+        '200':
+          description: MNP利用可能性
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MnpEligibilityResponse'
+
+  /mnp/request:
+    post:
+      tags:
+        - MNP
+      summary: MNP予約番号申請
+      description: 他社からの番号移行手続きを申請
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MnpRequest'
+      responses:
+        '201':
+          description: MNP申請成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MnpResponse'
+
+# ========================================
+# 共通コンポーネント定義
+# ========================================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT認証トークン
+    
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API キー認証
+
+  # ========================================
+  # スキーマ定義
+  # ========================================
+  schemas:
+    # 共通スキーマ
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+        total_pages:
+          type: integer
+          example: 5
+        has_next:
+          type: boolean
+          example: true
+        has_prev:
+          type: boolean
+          example: false
+
+    # 認証関連
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          minLength: 8
+          example: "password123"
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refresh_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          example: "Bearer"
+        expires_in:
+          type: integer
+          example: 3600
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        phone:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # プラン関連
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "plan_basic_001"
+        name:
+          type: string
+          example: "ベーシックプラン"
+        description:
+          type: string
+          example: "月額2,980円の基本プラン"
+        monthly_fee:
+          type: number
+          format: decimal
+          example: 2980
+        data_capacity:
+          type: string
+          example: "20GB"
+        voice_calls:
+          type: string
+          example: "無制限"
+        sms:
+          type: string
+          example: "無制限"
+        features:
+          type: array
+          items:
+            type: string
+        is_active:
+          type: boolean
+          example: true
+
+    PlanDetail:
+      allOf:
+        - $ref: '#/components/schemas/Plan'
+        - type: object
+          properties:
+            detailed_features:
+              type: object
+              properties:
+                data_speed:
+                  type: string
+                roaming:
+                  type: object
+                family_sharing:
+                  type: boolean
+            terms_and_conditions:
+              type: string
+            contract_period:
+              type: integer
+              description: "契約期間（月）"
+
+    # 機種関連
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "device_iphone15_001"
+        name:
+          type: string
+          example: "iPhone 15"
+        brand:
+          type: string
+          example: "Apple"
+        category:
+          type: string
+          enum: [iPhone, Android]
+        price_range:
+          type: string
+          enum: [entry, mid, premium]
+        price:
+          type: number
+          format: decimal
+          example: 124800
+        colors:
+          type: array
+          items:
+            type: string
+        storage_options:
+          type: array
+          items:
+            type: string
+        in_stock:
+          type: boolean
+        image_url:
+          type: string
+          format: uri
+
+    DeviceDetail:
+      allOf:
+        - $ref: '#/components/schemas/Device'
+        - type: object
+          properties:
+            specifications:
+              type: object
+              properties:
+                display_size:
+                  type: string
+                battery:
+                  type: string
+                camera:
+                  type: object
+                processor:
+                  type: string
+                memory:
+                  type: string
+            gallery_images:
+              type: array
+              items:
+                type: string
+                format: uri
+            reviews:
+              type: object
+              properties:
+                average_rating:
+                  type: number
+                total_reviews:
+                  type: integer
+
+    InventoryStatus:
+      type: object
+      properties:
+        device_id:
+          type: string
+        available_colors:
+          type: array
+          items:
+            type: object
+            properties:
+              color:
+                type: string
+              storage_options:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    storage:
+                      type: string
+                    in_stock:
+                      type: boolean
+                    estimated_delivery:
+                      type: string
+                      format: date
+
+    # オプション関連
+    Option:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          enum: [insurance, accessory, service]
+        description:
+          type: string
+        monthly_fee:
+          type: number
+          format: decimal
+        one_time_fee:
+          type: number
+          format: decimal
+        compatible_devices:
+          type: array
+          items:
+            type: string
+        is_required:
+          type: boolean
+
+    # 契約関連
+    ContractCreateRequest:
+      type: object
+      required:
+        - plan_id
+        - device_id
+      properties:
+        plan_id:
+          type: string
+        device_id:
+          type: string
+        device_color:
+          type: string
+        device_storage:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        customer_info:
+          $ref: '#/components/schemas/CustomerInfo'
+        save_as_draft:
+          type: boolean
+          default: false
+
+    Contract:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [draft, pending_ekyc, pending_payment, active, cancelled]
+        plan:
+          $ref: '#/components/schemas/Plan'
+        device:
+          $ref: '#/components/schemas/Device'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/Option'
+        customer_info:
+          $ref: '#/components/schemas/CustomerInfo'
+        total_amount:
+          type: number
+          format: decimal
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ContractDetail:
+      allOf:
+        - $ref: '#/components/schemas/Contract'
+        - type: object
+          properties:
+            ekyc_status:
+              $ref: '#/components/schemas/EkycStatus'
+            payment_info:
+              $ref: '#/components/schemas/PaymentInfo'
+            shipping_info:
+              $ref: '#/components/schemas/ShippingInfo'
+            mnp_info:
+              $ref: '#/components/schemas/MnpInfo'
+
+    ContractUpdateRequest:
+      type: object
+      properties:
+        customer_info:
+          $ref: '#/components/schemas/CustomerInfo'
+        device_color:
+          type: string
+        device_storage:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        shipping_address:
+          $ref: '#/components/schemas/ShippingAddress'
+
+    ContractSubmitRequest:
+      type: object
+      required:
+        - ekyc_session_id
+        - electronic_signature
+      properties:
+        ekyc_session_id:
+          type: string
+          format: uuid
+        electronic_signature:
+          type: string
+        payment_method:
+          type: string
+        payment_details:
+          type: object
+        shipping_address_id:
+          type: string
+          format: uuid
+
+    ContractSubmitResponse:
+      type: object
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        confirmation_number:
+          type: string
+        estimated_delivery_date:
+          type: string
+          format: date
+        next_steps:
+          type: array
+          items:
+            type: string
+
+    CustomerInfo:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        first_name_kana:
+          type: string
+        last_name_kana:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other]
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        address:
+          $ref: '#/components/schemas/Address'
+
+    Address:
+      type: object
+      properties:
+        postal_code:
+          type: string
+        prefecture:
+          type: string
+        city:
+          type: string
+        address_line1:
+          type: string
+        address_line2:
+          type: string
+        building:
+          type: string
+
+    # eKYC関連
+    EkycSessionRequest:
+      type: object
+      required:
+        - contract_id
+        - document_type
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+          enum: [drivers_license, passport, residence_card]
+
+    EkycSessionResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        verification_url:
+          type: string
+          format: uri
+        expires_at:
+          type: string
+          format: date-time
+        instructions:
+          type: array
+          items:
+            type: string
+
+    EkycStatusResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/EkycStatus'
+        completed_at:
+          type: string
+          format: date-time
+        result:
+          type: object
+          properties:
+            identity_verified:
+              type: boolean
+            address_verified:
+              type: boolean
+            confidence_score:
+              type: number
+              format: decimal
+
+    EkycStatus:
+      type: string
+      enum: [pending, in_progress, completed, failed, expired]
+
+    # 決済関連
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [credit_card, convenience_store, bank_transfer]
+        is_available:
+          type: boolean
+        additional_fees:
+          type: number
+          format: decimal
+
+    PaymentRequest:
+      type: object
+      required:
+        - contract_id
+        - payment_method_id
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+        payment_method_id:
+          type: string
+        payment_details:
+          type: object
+          description: "決済方法に応じた詳細情報"
+
+    PaymentResponse:
+      type: object
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        transaction_id:
+          type: string
+        redirect_url:
+          type: string
+          format: uri
+          description: "外部決済ページへのリダイレクトURL"
+
+    PaymentInfo:
+      type: object
+      properties:
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethod'
+        status:
+          type: string
+        amount:
+          type: number
+          format: decimal
+        transaction_id:
+          type: string
+
+    # 配送関連
+    ShippingAddress:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: "配送先名"
+        address:
+          $ref: '#/components/schemas/Address'
+        phone:
+          type: string
+        is_default:
+          type: boolean
+        delivery_instructions:
+          type: string
+
+    ShippingAddressRequest:
+      type: object
+      required:
+        - name
+        - address
+        - phone
+      properties:
+        name:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        phone:
+          type: string
+        is_default:
+          type: boolean
+        delivery_instructions:
+          type: string
+
+    ShippingInfo:
+      type: object
+      properties:
+        address:
+          $ref: '#/components/schemas/ShippingAddress'
+        estimated_delivery_date:
+          type: string
+          format: date
+        tracking_number:
+          type: string
+        carrier:
+          type: string
+
+    # MNP関連
+    MnpEligibilityRequest:
+      type: object
+      required:
+        - phone_number
+        - current_carrier
+      properties:
+        phone_number:
+          type: string
+        current_carrier:
+          type: string
+
+    MnpEligibilityResponse:
+      type: object
+      properties:
+        eligible:
+          type: boolean
+        phone_number:
+          type: string
+        current_carrier:
+          type: string
+        estimated_porting_time:
+          type: string
+        additional_requirements:
+          type: array
+          items:
+            type: string
+        restrictions:
+          type: array
+          items:
+            type: string
+
+    MnpRequest:
+      type: object
+      required:
+        - contract_id
+        - phone_number
+        - current_carrier
+        - account_info
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+        phone_number:
+          type: string
+        current_carrier:
+          type: string
+        account_info:
+          type: object
+          properties:
+            account_name:
+              type: string
+            account_number:
+              type: string
+            password:
+              type: string
+        desired_porting_date:
+          type: string
+          format: date
+
+    MnpResponse:
+      type: object
+      properties:
+        mnp_id:
+          type: string
+          format: uuid
+        reservation_number:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, completed, failed]
+        estimated_completion_date:
+          type: string
+          format: date
+        next_steps:
+          type: array
+          items:
+            type: string
+
+    MnpInfo:
+      type: object
+      properties:
+        phone_number:
+          type: string
+        current_carrier:
+          type: string
+        status:
+          type: string
+        reservation_number:
+          type: string
+        completion_date:
+          type: string
+          format: date
+
+    # エラースキーマ
+    Error:
+      type: object
+      required:
+        - error_code
+        - message
+      properties:
+        error_code:
+          type: string
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          example: "入力内容に不備があります"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              code:
+                type: string
+              message:
+                type: string
+        request_id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+
+  # ========================================
+  # 共通レスポンス定義
+  # ========================================
+  responses:
+    BadRequestError:
+      description: "リクエストエラー（400）"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error_code: "VALIDATION_ERROR"
+            message: "入力内容に不備があります"
+            details:
+              - field: "email"
+                code: "INVALID_FORMAT"
+                message: "有効なメールアドレスを入力してください"
+            request_id: "req_12345678-1234-1234-1234-123456789012"
+            timestamp: "2024-12-20T10:30:00Z"
+
+    UnauthorizedError:
+      description: "認証エラー（401）"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error_code: "UNAUTHORIZED"
+            message: "認証が必要です"
+            request_id: "req_12345678-1234-1234-1234-123456789012"
+            timestamp: "2024-12-20T10:30:00Z"
+
+    ForbiddenError:
+      description: "認可エラー（403）"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error_code: "FORBIDDEN"
+            message: "この操作を実行する権限がありません"
+
+    NotFoundError:
+      description: "リソースが見つかりません（404）"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error_code: "NOT_FOUND"
+            message: "指定されたリソースが見つかりません"
+
+    InternalServerError:
+      description: "内部サーバーエラー（500）"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error_code: "INTERNAL_ERROR"
+            message: "内部サーバーエラーが発生しました"
+
+# ========================================
+# タグ定義
+# ========================================
+tags:
+  - name: Authentication
+    description: "認証・ユーザー管理"
+  - name: User Management
+    description: "ユーザー情報管理"
+  - name: Plans
+    description: "プラン管理"
+  - name: Devices
+    description: "機種管理"
+  - name: Options
+    description: "オプション管理"
+  - name: Contracts
+    description: "契約管理"
+  - name: eKYC
+    description: "本人確認"
+  - name: Payments
+    description: "決済管理"
+  - name: Shipping
+    description: "配送管理"
+  - name: MNP
+    description: "番号ポータビリティ" 
