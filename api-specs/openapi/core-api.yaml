@@ -694,6 +694,80 @@ components:
           minLength: 8
           example: "password123"
 
+    ContractLoginRequest:
+      type: object
+      required:
+        - contract_number
+        - birth_date
+      properties:
+        contract_number:
+          type: string
+          example: "C001234567"
+        birth_date:
+          type: string
+          format: date
+          example: "1990-01-01"
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - birth_date
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        phone:
+          type: string
+          example: "090-1234-5678"
+        password:
+          type: string
+          minLength: 8
+          example: "password123"
+        first_name:
+          type: string
+          example: "太郎"
+        last_name:
+          type: string
+          example: "田中"
+        first_name_kana:
+          type: string
+          example: "タロウ"
+        last_name_kana:
+          type: string
+          example: "タナカ"
+        birth_date:
+          type: string
+          format: date
+          example: "1990-01-01"
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+          example: "MALE"
+
+    VerificationRequest:
+      type: object
+      required:
+        - code
+        - type
+      properties:
+        code:
+          type: string
+          example: "123456"
+        type:
+          type: string
+          enum: [email, phone]
+          example: "email"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        phone:
+          type: string
+          example: "090-1234-5678"
+
     AuthResponse:
       type: object
       properties:
@@ -714,8 +788,8 @@ components:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         email:
           type: string
           format: email
@@ -723,6 +797,18 @@ components:
           type: string
         phone:
           type: string
+        birth_date:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+        contract_number:
+          type: string
+        is_email_verified:
+          type: boolean
+        is_phone_verified:
+          type: boolean
         created_at:
           type: string
           format: date-time
@@ -1443,4 +1529,4 @@ tags:
   - name: Shipping
     description: "配送管理"
   - name: MNP
-    description: "番号ポータビリティ" 
+    description: "番号ポータビリティ"  
