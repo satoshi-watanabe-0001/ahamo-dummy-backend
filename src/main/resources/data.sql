@@ -27,3 +27,23 @@ INSERT INTO option_dependencies (option_id, required_option_id) VALUES
 INSERT INTO option_exclusions (option_id, excluded_option_id) VALUES
 ('option_insurance_001', 'option_insurance_002'),
 ('option_insurance_002', 'option_insurance_001');
+
+INSERT INTO plans (id, name, description, monthly_fee, data_capacity, voice_calls, sms, version, is_current_version, effective_start_date, created_at, updated_at, created_by, updated_by, approval_status) VALUES
+('plan_basic_001', 'ベーシックプラン', '月額2,980円の基本プラン', 2980.00, '20GB', '5分以内無料', '無制限', '1.0.0', true, '2024-01-01 00:00:00', '2024-01-01 00:00:00', '2024-01-01 00:00:00', 'admin@example.com', 'admin@example.com', 'APPROVED'),
+('plan_standard_001', 'スタンダードプラン', '月額3,980円の標準プラン（おすすめ）', 3980.00, '50GB', '無制限', '無制限', '1.0.0', true, '2024-01-01 00:00:00', '2024-01-01 00:00:00', '2024-01-01 00:00:00', 'admin@example.com', 'admin@example.com', 'APPROVED'),
+('plan_premium_001', 'プレミアムプラン', '月額5,980円のプレミアムプラン', 5980.00, '100GB', '無制限', '無制限', '1.0.0', true, '2024-01-01 00:00:00', '2024-01-01 00:00:00', '2024-01-01 00:00:00', 'admin@example.com', 'admin@example.com', 'APPROVED');
+
+INSERT INTO plan_features (plan_id, feature) VALUES
+('plan_basic_001', '5分以内国内通話無料'),
+('plan_basic_001', 'データ繰り越し'),
+('plan_basic_001', 'テザリング'),
+('plan_standard_001', '国内通話無料'),
+('plan_standard_001', 'データ繰り越し'),
+('plan_standard_001', 'テザリング'),
+('plan_standard_001', '海外ローミング'),
+('plan_premium_001', '国内通話無料'),
+('plan_premium_001', 'データ繰り越し'),
+('plan_premium_001', 'テザリング'),
+('plan_premium_001', '海外ローミング'),
+('plan_premium_001', '5G高速通信'),
+('plan_premium_001', 'プレミアムサポート');

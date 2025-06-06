@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "plans")
@@ -31,6 +32,13 @@ public class Plan {
     
     @Column(name = "voice_calls")
     private String voiceCalls;
+    
+    private String sms;
+    
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "plan_features", joinColumns = @JoinColumn(name = "plan_id"))
+    @Column(name = "feature")
+    private List<String> features;
     
     private String version;
     

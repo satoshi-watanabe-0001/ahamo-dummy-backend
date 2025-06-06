@@ -116,3 +116,32 @@ CREATE TABLE IF NOT EXISTS customer_history (
     ip_address VARCHAR(45),
     FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
+
+CREATE TABLE IF NOT EXISTS plans (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    monthly_fee DECIMAL(10,2) NOT NULL,
+    data_capacity VARCHAR(100),
+    voice_calls VARCHAR(100),
+    sms VARCHAR(100),
+    version VARCHAR(50),
+    parent_plan_id VARCHAR(255),
+    is_current_version BOOLEAN DEFAULT TRUE,
+    effective_start_date TIMESTAMP,
+    effective_end_date TIMESTAMP,
+    campaign_start_date TIMESTAMP,
+    campaign_end_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    change_reason TEXT,
+    approval_status VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS plan_features (
+    plan_id VARCHAR(255) NOT NULL,
+    feature VARCHAR(255) NOT NULL,
+    FOREIGN KEY (plan_id) REFERENCES plans(id)
+);
