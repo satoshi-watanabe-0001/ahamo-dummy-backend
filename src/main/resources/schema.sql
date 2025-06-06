@@ -43,3 +43,35 @@ CREATE TABLE IF NOT EXISTS devices (
     created_by VARCHAR(255),
     updated_by VARCHAR(255)
 );
+
+CREATE TABLE IF NOT EXISTS options (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL CHECK (category IN ('insurance', 'accessory', 'service')),
+    description TEXT,
+    monthly_fee DECIMAL(10,2) NOT NULL,
+    one_time_fee DECIMAL(10,2) DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    effective_start_date TIMESTAMP,
+    effective_end_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS option_dependencies (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    option_id VARCHAR(255) NOT NULL,
+    required_option_id VARCHAR(255) NOT NULL,
+    FOREIGN KEY (option_id) REFERENCES options(id),
+    FOREIGN KEY (required_option_id) REFERENCES options(id)
+);
+
+CREATE TABLE IF NOT EXISTS option_exclusions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    option_id VARCHAR(255) NOT NULL,
+    excluded_option_id VARCHAR(255) NOT NULL,
+    FOREIGN KEY (option_id) REFERENCES options(id),
+    FOREIGN KEY (excluded_option_id) REFERENCES options(id)
+);
