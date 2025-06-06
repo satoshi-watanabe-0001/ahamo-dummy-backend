@@ -97,6 +97,44 @@ public class SecurityAuditService {
         logSecurityEvent("UNAUTHORIZED_ACCESS", ipAddress, "Unauthorized access attempt to: " + endpoint);
     }
 
+    public void logPersonalDataAccess(String eventType, String ipAddress, String details, Long customerId) {
+        String eventKey = SECURITY_EVENT_PREFIX + System.currentTimeMillis();
+        
+        Map<String, String> eventData = new HashMap<>();
+        eventData.put("event_type", eventType);
+        eventData.put("ip_address", ipAddress);
+        eventData.put("details", details);
+        eventData.put("timestamp", LocalDateTime.now().toString());
+        eventData.put("data_type", "PERSONAL_DATA");
+        if (customerId != null) {
+            eventData.put("customer_id", customerId.toString());
+        }
+        
+        redisTemplate.opsForHash().putAll(eventKey, eventData);
+        redisTemplate.expire(eventKey, 30, TimeUnit.DAYS);
+        
+        log.info("Personal data access logged: {} from IP: {} - {}", eventType, ipAddress, details);
+    }
+
+    public void logPersonalDataChange(String eventType, String ipAddress, String details, Long customerId) {
+        String eventKey = SECURITY_EVENT_PREFIX + System.currentTimeMillis();
+        
+        Map<String, String> eventData = new HashMap<>();
+        eventData.put("event_type", eventType);
+        eventData.put("ip_address", ipAddress);
+        eventData.put("details", details);
+        eventData.put("timestamp", LocalDateTime.now().toString());
+        eventData.put("data_type", "PERSONAL_DATA_CHANGE");
+        if (customerId != null) {
+            eventData.put("customer_id", customerId.toString());
+        }
+        
+        redisTemplate.opsForHash().putAll(eventKey, eventData);
+        redisTemplate.expire(eventKey, 30, TimeUnit.DAYS);
+        
+        log.warn("Personal data change logged: {} from IP: {} - {}", eventType, ipAddress, details);
+    }
+
     public String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {

@@ -75,3 +75,44 @@ CREATE TABLE IF NOT EXISTS option_exclusions (
     FOREIGN KEY (option_id) REFERENCES options(id),
     FOREIGN KEY (excluded_option_id) REFERENCES options(id)
 );
+
+CREATE TABLE IF NOT EXISTS addresses (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    postal_code VARCHAR(10),
+    prefecture VARCHAR(50),
+    city VARCHAR(100),
+    address_line1 VARCHAR(255),
+    address_line2 VARCHAR(255),
+    building VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS customers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    first_name_kana VARCHAR(100),
+    last_name_kana VARCHAR(100),
+    birth_date DATE,
+    gender VARCHAR(10),
+    phone VARCHAR(20),
+    email VARCHAR(255),
+    contract_number VARCHAR(50) UNIQUE,
+    address_id BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    FOREIGN KEY (address_id) REFERENCES addresses(id)
+);
+
+CREATE TABLE IF NOT EXISTS customer_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    customer_id BIGINT NOT NULL,
+    field_name VARCHAR(100) NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    changed_by VARCHAR(255),
+    ip_address VARCHAR(45),
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);

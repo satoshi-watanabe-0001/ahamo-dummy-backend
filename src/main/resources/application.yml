@@ -66,6 +66,8 @@ security:
     time-window: 300000
   session:
     timeout: 86400000
+  encryption:
+    key: myDefaultEncryptionKey123456789012
 
 logging:
   level:
