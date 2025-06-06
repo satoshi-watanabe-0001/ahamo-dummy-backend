@@ -8,6 +8,7 @@ import com.ahamo.device.repository.DeviceRepository;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.imgscalr.Scalr;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,9 +26,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DeviceServiceImpl implements DeviceService {
     
     private final DeviceRepository deviceRepository;
+    private final InventoryService inventoryService;
     
     private static final String UPLOAD_DIR = "uploads/images/";
     private static final int MAX_IMAGE_WIDTH = 1024;
@@ -244,6 +247,22 @@ public class DeviceServiceImpl implements DeviceService {
             device.setInStock(random.nextBoolean());
             device.setUpdatedAt(LocalDateTime.now());
             device.setUpdatedBy("system");
+            
+            if (device.getColors() != null && device.getStorageOptions() != null) {
+                String[] colors = device.getColors().split(",");
+                String[] storages = device.getStorageOptions().split(",");
+                
+                for (String color : colors) {
+                    for (String storage : storages) {
+                        int randomStock = random.nextInt(20);
+                        try {
+                            inventoryService.updateInventoryStock(device.getId(), color.trim(), storage.trim(), randomStock);
+                        } catch (Exception e) {
+                            log.error("Failed to update inventory for {}:{}:{}", device.getId(), color.trim(), storage.trim(), e);
+                        }
+                    }
+                }
+            }
         }
         
         deviceRepository.saveAll(devices);

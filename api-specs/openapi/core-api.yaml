@@ -469,6 +469,190 @@ paths:
               schema:
                 $ref: '#/components/schemas/InventoryStatus'
 
+  /api/inventory:
+    get:
+      tags:
+        - Inventory
+      summary: "全機種の在庫状況を取得"
+      responses:
+        '200':
+          description: "全在庫状況"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryStatus'
+
+  /api/inventory/{deviceId}:
+    get:
+      tags:
+        - Inventory
+      summary: "指定機種の在庫状況を取得"
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "在庫状況"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryStatus'
+
+  /api/inventory/alerts:
+    get:
+      tags:
+        - Inventory
+      summary: "在庫アラートを取得"
+      responses:
+        '200':
+          description: "在庫アラート一覧"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryAlert'
+
+  /api/inventory/{deviceId}/{color}/{storage}:
+    put:
+      tags:
+        - Inventory
+      summary: "在庫数を更新"
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: color
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: storage
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: totalStock
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "更新完了"
+
+  /api/inventory/reserve:
+    post:
+      tags:
+        - Inventory
+      summary: "在庫を予約"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+      responses:
+        '201':
+          description: "予約作成完了"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /api/inventory/{reservationId}/allocate:
+    put:
+      tags:
+        - Inventory
+      summary: "予約を確定"
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "確定完了"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/inventory/{reservationId}:
+    delete:
+      tags:
+        - Inventory
+      summary: "予約をキャンセル"
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "キャンセル完了"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/inventory/reservations:
+    get:
+      tags:
+        - Inventory
+      summary: "顧客の予約一覧を取得"
+      parameters:
+        - name: customerId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "予約一覧"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReservationResponse'
+
+  /api/inventory/reservations/{reservationId}:
+    get:
+      tags:
+        - Inventory
+      summary: "予約詳細を取得"
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: "予約詳細"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
   # ========================================
   # ========================================
   /api/v1/admin/devices:
@@ -1675,6 +1859,78 @@ components:
                     estimated_delivery:
                       type: string
                       format: date
+                    available_quantity:
+                      type: integer
+
+    InventoryAlert:
+      type: object
+      properties:
+        device_id:
+          type: string
+        device_name:
+          type: string
+        color:
+          type: string
+        storage:
+          type: string
+        current_stock:
+          type: integer
+        alert_threshold:
+          type: integer
+        last_updated:
+          type: string
+          format: date-time
+        severity:
+          type: string
+          enum: [WARNING, CRITICAL]
+
+    ReservationRequest:
+      type: object
+      required:
+        - device_id
+        - color
+        - storage
+        - quantity
+      properties:
+        device_id:
+          type: string
+        color:
+          type: string
+        storage:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        customer_id:
+          type: integer
+          format: int64
+
+    ReservationResponse:
+      type: object
+      properties:
+        reservation_id:
+          type: integer
+          format: int64
+        device_id:
+          type: string
+        color:
+          type: string
+        storage:
+          type: string
+        quantity:
+          type: integer
+        status:
+          type: string
+          enum: [RESERVED, ALLOCATED, CANCELLED, EXPIRED]
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        customer_id:
+          type: integer
+          format: int64
 
     AdminDeviceRequest:
       type: object
@@ -2348,4 +2604,6 @@ tags:
   - name: Shipping
     description: "配送管理"
   - name: MNP
-    description: "番号ポータビリティ"                                                                                
+    description: "番号ポータビリティ"
+  - name: Inventory
+    description: "在庫管理"                                                                                                                                                                                                                                                                                                                                

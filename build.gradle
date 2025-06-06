@@ -33,6 +33,7 @@ dependencies {
     implementation 'com.twilio.sdk:twilio:8.36.0'
     implementation 'com.opencsv:opencsv:5.7.1'
     implementation 'org.imgscalr:imgscalr-lib:4.2'
+    implementation 'org.redisson:redisson-spring-boot-starter:3.17.7'
     
     runtimeOnly 'com.h2database:h2'
     

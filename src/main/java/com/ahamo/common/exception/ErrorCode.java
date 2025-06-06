@@ -11,7 +11,12 @@ public enum ErrorCode {
     SERVICE_UNAVAILABLE("サービスが一時的に利用できません", ErrorSeverity.CRITICAL, "しばらく時間をおいて再度お試しください"),
     
     NOT_FOUND("指定されたリソースが見つかりません", ErrorSeverity.WARNING, "URLを確認して再度お試しください"),
-    CONFLICT("データの競合が発生しました", ErrorSeverity.WARNING, "ページをリロードして再度お試しください");
+    CONFLICT("データの競合が発生しました", ErrorSeverity.WARNING, "ページをリロードして再度お試しください"),
+    
+    INVENTORY_NOT_AVAILABLE("在庫が不足しています", ErrorSeverity.WARNING, "別の商品をお選びください"),
+    RESERVATION_EXPIRED("予約期限が切れました", ErrorSeverity.WARNING, "再度予約をお願いします"),
+    RESERVATION_NOT_FOUND("予約が見つかりません", ErrorSeverity.WARNING, "予約番号を確認してください"),
+    INSUFFICIENT_STOCK("在庫数が不足しています", ErrorSeverity.WARNING, "在庫数を確認してください");
     
     private final String defaultMessage;
     private final ErrorSeverity severity;
