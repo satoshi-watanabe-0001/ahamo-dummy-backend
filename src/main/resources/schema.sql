@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS customer_history (
     ip_address VARCHAR(45),
     FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
+<<<<<<< HEAD
 
 CREATE TABLE IF NOT EXISTS plans (
     id VARCHAR(255) PRIMARY KEY,
@@ -145,3 +146,39 @@ CREATE TABLE IF NOT EXISTS plan_features (
     feature VARCHAR(255) NOT NULL,
     FOREIGN KEY (plan_id) REFERENCES plans(id)
 );
+||||||| parent of 7abdf50 (SCRUM-46: 在庫管理システム実装)
+=======
+
+CREATE TABLE IF NOT EXISTS inventory (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    device_id VARCHAR(255) NOT NULL,
+    color VARCHAR(50) NOT NULL,
+    storage VARCHAR(50) NOT NULL,
+    total_stock INT NOT NULL DEFAULT 0,
+    available_stock INT NOT NULL DEFAULT 0,
+    reserved_stock INT NOT NULL DEFAULT 0,
+    allocated_stock INT NOT NULL DEFAULT 0,
+    alert_threshold INT NOT NULL DEFAULT 5,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_inventory UNIQUE (device_id, color, storage),
+    CONSTRAINT fk_inventory_device FOREIGN KEY (device_id) REFERENCES devices(id)
+);
+
+CREATE TABLE IF NOT EXISTS reservations (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    inventory_id BIGINT NOT NULL,
+    customer_id BIGINT,
+    quantity INT NOT NULL DEFAULT 1,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('RESERVED', 'ALLOCATED', 'CANCELLED', 'EXPIRED')),
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reservation_inventory FOREIGN KEY (inventory_id) REFERENCES inventory(id),
+    CONSTRAINT fk_reservation_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+CREATE INDEX idx_inventory_device_color ON inventory(device_id, color);
+CREATE INDEX idx_inventory_status ON inventory(available_stock, alert_threshold);
+CREATE INDEX idx_reservation_expiry ON reservations(expires_at, status);
+CREATE INDEX idx_reservation_status ON reservations(status);
+CREATE INDEX idx_inventory_updated ON inventory(updated_at);
+>>>>>>> 7abdf50 (SCRUM-46: 在庫管理システム実装)

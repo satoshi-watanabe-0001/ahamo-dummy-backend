@@ -26,7 +26,7 @@ spring:
     init:
       mode: always
       schema-locations: classpath:schema.sql
-      data-locations: classpath:data.sql
+      data-locations: classpath:data.sql,classpath:data-inventory.sql
   
   redis:
     host: localhost
@@ -37,6 +37,11 @@ spring:
         max-active: 8
         max-idle: 8
         min-idle: 0
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
   
   mail:
     host: smtp.gmail.com
