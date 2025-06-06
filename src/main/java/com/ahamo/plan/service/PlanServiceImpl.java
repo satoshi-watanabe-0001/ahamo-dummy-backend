@@ -3,6 +3,8 @@ package com.ahamo.plan.service;
 import com.ahamo.plan.dto.AdminPlanRequest;
 import com.ahamo.plan.dto.AdminPlanResponse;
 import com.ahamo.plan.dto.PlanVersionHistory;
+import com.ahamo.plan.dto.PlanResponse;
+import com.ahamo.plan.dto.PlansResponse;
 import com.ahamo.plan.model.Plan;
 import com.ahamo.plan.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,8 @@ public class PlanServiceImpl implements PlanService {
         plan.setMonthlyFee(request.getMonthlyFee());
         plan.setDataCapacity(request.getDataCapacity());
         plan.setVoiceCalls(request.getVoiceCalls());
+        plan.setSms(request.getSms());
+        plan.setFeatures(request.getFeatures());
         plan.setVersion("1.0.0");
         plan.setIsCurrentVersion(true);
         plan.setEffectiveStartDate(request.getEffectiveStartDate());
@@ -60,6 +64,8 @@ public class PlanServiceImpl implements PlanService {
         newVersion.setMonthlyFee(request.getMonthlyFee());
         newVersion.setDataCapacity(request.getDataCapacity());
         newVersion.setVoiceCalls(request.getVoiceCalls());
+        newVersion.setSms(request.getSms());
+        newVersion.setFeatures(request.getFeatures());
         newVersion.setVersion(incrementVersion(existingPlan.getVersion()));
         newVersion.setParentPlanId(planId);
         newVersion.setIsCurrentVersion(true);
@@ -98,6 +104,43 @@ public class PlanServiceImpl implements PlanService {
                 .collect(Collectors.toList());
     }
     
+    @Override
+    public PlansResponse getActivePlans() {
+        List<Plan> activePlans = planRepository.findByIsCurrentVersionTrue();
+        List<PlanResponse> planResponses = activePlans.stream()
+                .map(this::convertToPlanResponse)
+                .collect(Collectors.toList());
+        
+        return new PlansResponse(planResponses, planResponses.size());
+    }
+    
+    @Override
+    public PlanResponse getPlanById(String planId) {
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new RuntimeException("Plan not found: " + planId));
+        
+        if (!Boolean.TRUE.equals(plan.getIsCurrentVersion())) {
+            throw new RuntimeException("Plan is not active: " + planId);
+        }
+        
+        return convertToPlanResponse(plan);
+    }
+    
+    private PlanResponse convertToPlanResponse(Plan plan) {
+        PlanResponse response = new PlanResponse();
+        response.setId(plan.getId());
+        response.setName(plan.getName());
+        response.setDescription(plan.getDescription());
+        response.setMonthlyFee(plan.getMonthlyFee());
+        response.setDataCapacity(plan.getDataCapacity());
+        response.setVoiceCalls(plan.getVoiceCalls());
+        response.setSms(plan.getSms());
+        response.setFeatures(plan.getFeatures());
+        response.setIsActive(Boolean.TRUE.equals(plan.getIsCurrentVersion()));
+        response.setIsPopular("plan_standard_001".equals(plan.getId()));
+        return response;
+    }
+    
     private AdminPlanResponse convertToAdminResponse(Plan plan) {
         AdminPlanResponse response = new AdminPlanResponse();
         response.setId(plan.getId());
@@ -106,6 +149,8 @@ public class PlanServiceImpl implements PlanService {
         response.setMonthlyFee(plan.getMonthlyFee());
         response.setDataCapacity(plan.getDataCapacity());
         response.setVoiceCalls(plan.getVoiceCalls());
+        response.setSms(plan.getSms());
+        response.setFeatures(plan.getFeatures());
         response.setVersion(plan.getVersion());
         response.setParentPlanId(plan.getParentPlanId());
         response.setIsCurrentVersion(plan.getIsCurrentVersion());
