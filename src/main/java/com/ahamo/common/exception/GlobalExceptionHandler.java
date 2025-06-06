@@ -25,8 +25,10 @@ public class GlobalExceptionHandler {
         log.error("Authentication error: {}", ex.getMessage());
         
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("error_code", "AUTHENTICATION_ERROR");
-        errorResponse.put("message", ex.getMessage());
+        errorResponse.put("error_code", ErrorCode.UNAUTHORIZED.name());
+        errorResponse.put("message", ErrorCode.UNAUTHORIZED.getDefaultMessage());
+        errorResponse.put("severity", ErrorCode.UNAUTHORIZED.getSeverity().name());
+        errorResponse.put("resolution", ErrorCode.UNAUTHORIZED.getResolution());
         errorResponse.put("request_id", UUID.randomUUID().toString());
         errorResponse.put("timestamp", LocalDateTime.now().toString());
         
@@ -47,8 +49,10 @@ public class GlobalExceptionHandler {
         }
         
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("error_code", "VALIDATION_ERROR");
-        errorResponse.put("message", "入力内容に不備があります");
+        errorResponse.put("error_code", ErrorCode.VALIDATION_ERROR.name());
+        errorResponse.put("message", ErrorCode.VALIDATION_ERROR.getDefaultMessage());
+        errorResponse.put("severity", ErrorCode.VALIDATION_ERROR.getSeverity().name());
+        errorResponse.put("resolution", ErrorCode.VALIDATION_ERROR.getResolution());
         errorResponse.put("details", details);
         errorResponse.put("request_id", UUID.randomUUID().toString());
         errorResponse.put("timestamp", LocalDateTime.now().toString());
@@ -61,8 +65,10 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
         
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("error_code", "INTERNAL_ERROR");
-        errorResponse.put("message", "内部サーバーエラーが発生しました");
+        errorResponse.put("error_code", ErrorCode.INTERNAL_ERROR.name());
+        errorResponse.put("message", ErrorCode.INTERNAL_ERROR.getDefaultMessage());
+        errorResponse.put("severity", ErrorCode.INTERNAL_ERROR.getSeverity().name());
+        errorResponse.put("resolution", ErrorCode.INTERNAL_ERROR.getResolution());
         errorResponse.put("request_id", UUID.randomUUID().toString());
         errorResponse.put("timestamp", LocalDateTime.now().toString());
         

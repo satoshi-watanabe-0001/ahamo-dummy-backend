@@ -2251,6 +2251,15 @@ components:
         timestamp:
           type: string
           format: date-time
+        severity:
+          type: string
+          enum: [CRITICAL, WARNING, INFO]
+          description: "エラーの重要度"
+          example: "WARNING"
+        resolution:
+          type: string
+          description: "エラー解決のためのガイダンス"
+          example: "ブラウザをリロードして再度お試しください"
 
   # ========================================
   # 共通レスポンス定義
@@ -2339,4 +2348,4 @@ tags:
   - name: Shipping
     description: "配送管理"
   - name: MNP
-    description: "番号ポータビリティ"                                        
+    description: "番号ポータビリティ"                                                                                
