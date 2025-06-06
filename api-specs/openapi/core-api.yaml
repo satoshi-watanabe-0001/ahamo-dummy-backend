@@ -168,6 +168,189 @@ paths:
           $ref: '#/components/responses/NotFoundError'
 
   # ========================================
+  # ========================================
+  /api/v1/admin/plans:
+    post:
+      tags:
+        - Admin Plans
+      summary: プラン作成
+      description: 新しいプランを作成する（管理者専用）
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminPlanRequest'
+      responses:
+        '201':
+          description: プラン作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPlanResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/admin/plans/{planId}:
+    put:
+      tags:
+        - Admin Plans
+      summary: プラン更新
+      description: 既存プランを更新する（新バージョンを作成）
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          description: プランID
+          schema:
+            type: string
+            example: "plan_basic_001"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/AdminPlanRequest'
+                - type: object
+                  properties:
+                    change_reason:
+                      type: string
+                      example: "料金改定"
+                      description: "変更理由"
+      responses:
+        '200':
+          description: プラン更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPlanResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Admin Plans
+      summary: プラン無効化
+      description: プランを無効化する（論理削除）
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          description: プランID
+          schema:
+            type: string
+            example: "plan_basic_001"
+      responses:
+        '204':
+          description: プラン無効化成功
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/admin/plans/{planId}/versions:
+    get:
+      tags:
+        - Admin Plans
+      summary: プランバージョン履歴取得
+      description: 指定プランのバージョン履歴を取得する
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          description: プランID
+          schema:
+            type: string
+            example: "plan_basic_001"
+        - name: page
+          in: query
+          description: ページ番号
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: 1ページあたりの件数
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: バージョン履歴取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PlanVersionHistory'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 5
+                      total_pages:
+                        type: integer
+                        example: 1
+                      has_next:
+                        type: boolean
+                        example: false
+                      has_prev:
+                        type: boolean
+                        example: false
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ========================================
   # 機種管理
   # ========================================
   /devices:
@@ -849,6 +1032,112 @@ components:
         is_active:
           type: boolean
           example: true
+        version:
+          type: string
+          example: "1.0.0"
+          description: "プランバージョン"
+        parent_plan_id:
+          type: string
+          example: "plan_basic_001_v1"
+          description: "親プランID（更新時の元プラン）"
+        is_current_version:
+          type: boolean
+          example: true
+          description: "現在有効なバージョンかどうか"
+        effective_start_date:
+          type: string
+          format: date-time
+          example: "2024-12-20T00:00:00Z"
+          description: "有効開始日時"
+        effective_end_date:
+          type: string
+          format: date-time
+          example: "2025-12-19T23:59:59Z"
+          description: "有効終了日時"
+        campaign_start_date:
+          type: string
+          format: date-time
+          example: "2024-12-20T00:00:00Z"
+          description: "キャンペーン開始日時"
+        campaign_end_date:
+          type: string
+          format: date-time
+          example: "2025-03-31T23:59:59Z"
+          description: "キャンペーン終了日時"
+        pricing:
+          type: object
+          properties:
+            base_fee:
+              type: number
+              multipleOf: 0.01
+              minimum: 0
+              example: 2980.00
+              description: "基本料金"
+            call_fee:
+              type: number
+              multipleOf: 0.01
+              minimum: 0
+              example: 0.00
+              description: "通話料金（1分あたり）"
+            data_fee:
+              type: number
+              multipleOf: 0.01
+              minimum: 0
+              example: 550.00
+              description: "データ追加料金（1GBあたり）"
+            option_fees:
+              type: array
+              items:
+                type: object
+                properties:
+                  option_id:
+                    type: string
+                    example: "insurance_001"
+                  option_name:
+                    type: string
+                    example: "端末保証サービス"
+                  monthly_fee:
+                    type: number
+                    multipleOf: 0.01
+                    minimum: 0
+                    example: 550.00
+              description: "オプション料金一覧"
+            discounts:
+              type: array
+              items:
+                type: object
+                properties:
+                  discount_id:
+                    type: string
+                    example: "family_discount"
+                  discount_name:
+                    type: string
+                    example: "家族割引"
+                  discount_type:
+                    type: string
+                    enum: [percentage, fixed_amount]
+                    example: "fixed_amount"
+                  discount_value:
+                    type: number
+                    multipleOf: 0.01
+                    example: 500.00
+                  conditions:
+                    type: object
+                    properties:
+                      min_family_members:
+                        type: integer
+                        example: 2
+              description: "割引情報一覧"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-12-20T10:30:00Z"
+          description: "作成日時"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-12-20T10:30:00Z"
+          description: "更新日時"
 
     PlanDetail:
       allOf:
@@ -869,6 +1158,196 @@ components:
             contract_period:
               type: integer
               description: "契約期間（月）"
+
+    AdminPlanRequest:
+      type: object
+      required:
+        - name
+        - description
+        - pricing
+        - effective_start_date
+      properties:
+        name:
+          type: string
+          example: "ベーシックプラン"
+          description: "プラン名"
+        description:
+          type: string
+          example: "月額2,980円の基本プラン"
+          description: "プラン説明"
+        data_capacity:
+          type: string
+          example: "20GB"
+          description: "データ容量"
+        voice_calls:
+          type: string
+          example: "無制限"
+          description: "音声通話"
+        sms:
+          type: string
+          example: "無制限"
+          description: "SMS"
+        features:
+          type: array
+          items:
+            type: string
+          description: "プラン機能一覧"
+        effective_start_date:
+          type: string
+          format: date-time
+          example: "2024-12-20T00:00:00Z"
+          description: "有効開始日時"
+        effective_end_date:
+          type: string
+          format: date-time
+          example: "2025-12-19T23:59:59Z"
+          description: "有効終了日時"
+        campaign_start_date:
+          type: string
+          format: date-time
+          example: "2024-12-20T00:00:00Z"
+          description: "キャンペーン開始日時"
+        campaign_end_date:
+          type: string
+          format: date-time
+          example: "2025-03-31T23:59:59Z"
+          description: "キャンペーン終了日時"
+        pricing:
+          type: object
+          required:
+            - base_fee
+          properties:
+            base_fee:
+              type: number
+              multipleOf: 0.01
+              minimum: 0
+              example: 2980.00
+              description: "基本料金"
+            call_fee:
+              type: number
+              multipleOf: 0.01
+              minimum: 0
+              example: 0.00
+              description: "通話料金（1分あたり）"
+            data_fee:
+              type: number
+              multipleOf: 0.01
+              minimum: 0
+              example: 550.00
+              description: "データ追加料金（1GBあたり）"
+            option_fees:
+              type: array
+              items:
+                type: object
+                properties:
+                  option_id:
+                    type: string
+                    example: "insurance_001"
+                  option_name:
+                    type: string
+                    example: "端末保証サービス"
+                  monthly_fee:
+                    type: number
+                    multipleOf: 0.01
+                    minimum: 0
+                    example: 550.00
+              description: "オプション料金一覧"
+            discounts:
+              type: array
+              items:
+                type: object
+                properties:
+                  discount_id:
+                    type: string
+                    example: "family_discount"
+                  discount_name:
+                    type: string
+                    example: "家族割引"
+                  discount_type:
+                    type: string
+                    enum: [percentage, fixed_amount]
+                    example: "fixed_amount"
+                  discount_value:
+                    type: number
+                    multipleOf: 0.01
+                    example: 500.00
+                  conditions:
+                    type: object
+                    properties:
+                      min_family_members:
+                        type: integer
+                        example: 2
+              description: "割引情報一覧"
+
+    AdminPlanResponse:
+      allOf:
+        - $ref: '#/components/schemas/Plan'
+        - type: object
+          properties:
+            admin_metadata:
+              type: object
+              properties:
+                created_by:
+                  type: string
+                  example: "admin_user_001"
+                  description: "作成者ID"
+                updated_by:
+                  type: string
+                  example: "admin_user_002"
+                  description: "更新者ID"
+                change_reason:
+                  type: string
+                  example: "料金改定"
+                  description: "変更理由"
+                approval_status:
+                  type: string
+                  enum: [draft, approved, rejected]
+                  example: "approved"
+                  description: "承認ステータス"
+
+    PlanVersion:
+      type: object
+      properties:
+        version:
+          type: string
+          example: "1.2.0"
+          description: "バージョン番号"
+        plan_data:
+          $ref: '#/components/schemas/Plan'
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-12-20T10:30:00Z"
+          description: "バージョン作成日時"
+        created_by:
+          type: string
+          example: "admin_user_001"
+          description: "作成者ID"
+        change_reason:
+          type: string
+          example: "料金改定"
+          description: "変更理由"
+        is_current:
+          type: boolean
+          example: false
+          description: "現在有効なバージョンかどうか"
+
+    PlanVersionHistory:
+      type: object
+      properties:
+        plan_id:
+          type: string
+          example: "plan_basic_001"
+          description: "プランID"
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanVersion'
+          description: "バージョン履歴"
+        total_versions:
+          type: integer
+          example: 5
+          description: "総バージョン数"
 
     # 機種関連
     Device:
@@ -1516,6 +1995,8 @@ tags:
     description: "ユーザー情報管理"
   - name: Plans
     description: "プラン管理"
+  - name: Admin Plans
+    description: "プラン管理（管理者用）"
   - name: Devices
     description: "機種管理"
   - name: Options
@@ -1529,4 +2010,4 @@ tags:
   - name: Shipping
     description: "配送管理"
   - name: MNP
-    description: "番号ポータビリティ"  
+    description: "番号ポータビリティ"          
