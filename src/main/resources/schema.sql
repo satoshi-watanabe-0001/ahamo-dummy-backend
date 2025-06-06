@@ -24,3 +24,22 @@ CREATE TABLE IF NOT EXISTS user_roles (
     role VARCHAR(50) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS devices (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    brand VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL CHECK (category IN ('iPhone', 'Android')),
+    price_range VARCHAR(50) NOT NULL CHECK (price_range IN ('entry', 'mid', 'premium')),
+    price DECIMAL(10,2) NOT NULL,
+    colors TEXT,
+    storage_options TEXT,
+    in_stock BOOLEAN DEFAULT TRUE,
+    image_url VARCHAR(500),
+    specifications TEXT,
+    gallery_images TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255)
+);
