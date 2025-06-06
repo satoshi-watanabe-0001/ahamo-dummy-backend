@@ -470,6 +470,240 @@ paths:
                 $ref: '#/components/schemas/InventoryStatus'
 
   # ========================================
+  # ========================================
+  /api/v1/admin/devices:
+    post:
+      tags:
+        - Admin Devices
+      summary: 機種作成
+      description: 新しい機種を作成する
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminDeviceRequest'
+      responses:
+        '201':
+          description: 機種作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminDeviceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    get:
+      tags:
+        - Admin Devices
+      summary: 機種一覧取得（管理者用）
+      description: 管理者用の機種一覧を取得する
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: 機種一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminDeviceResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/admin/devices/{deviceId}:
+    put:
+      tags:
+        - Admin Devices
+      summary: 機種更新
+      description: 指定機種の情報を更新する
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          description: 機種ID
+          schema:
+            type: string
+            example: "device_iphone15_001"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminDeviceRequest'
+      responses:
+        '200':
+          description: 機種更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminDeviceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - Admin Devices
+      summary: 機種削除
+      description: 指定機種を削除する
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          description: 機種ID
+          schema:
+            type: string
+            example: "device_iphone15_001"
+      responses:
+        '200':
+          description: 機種削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Device deleted successfully"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/admin/devices/import:
+    post:
+      tags:
+        - Admin Devices
+      summary: 機種CSV一括インポート
+      description: CSVファイルから機種を一括インポートする
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSVファイル
+      responses:
+        '200':
+          description: インポート結果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceImportResult'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/admin/devices/export:
+    get:
+      tags:
+        - Admin Devices
+      summary: 機種CSVエクスポート
+      description: 機種データをCSVファイルでエクスポートする
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: CSVファイル
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/admin/devices/upload-image:
+    post:
+      tags:
+        - Admin Devices
+      summary: 機種画像アップロード
+      description: 機種の画像をアップロードする
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 画像ファイル（JPEG/PNG/WebP、最大1MB）
+      responses:
+        '200':
+          description: アップロード成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imageUrl:
+                    type: string
+                    example: "/uploads/images/uuid_filename.jpg"
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ========================================
   # オプション管理
   # ========================================
   /options:
@@ -1442,6 +1676,101 @@ components:
                       type: string
                       format: date
 
+    AdminDeviceRequest:
+      type: object
+      required:
+        - name
+        - brand
+        - category
+        - priceRange
+        - price
+      properties:
+        name:
+          type: string
+          example: "iPhone 15"
+        brand:
+          type: string
+          example: "Apple"
+        category:
+          type: string
+          enum: [iPhone, Android]
+        priceRange:
+          type: string
+          enum: [entry, mid, premium]
+        price:
+          type: number
+          format: decimal
+          example: 124800
+        colors:
+          type: array
+          items:
+            type: string
+        storageOptions:
+          type: array
+          items:
+            type: string
+        inStock:
+          type: boolean
+          default: true
+        imageUrl:
+          type: string
+          format: uri
+        specifications:
+          type: string
+        galleryImages:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    AdminDeviceResponse:
+      allOf:
+        - $ref: '#/components/schemas/AdminDeviceRequest'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "device_iphone15_001"
+            createdBy:
+              type: string
+              example: "admin@example.com"
+            updatedBy:
+              type: string
+              example: "admin@example.com"
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    DeviceImportResult:
+      type: object
+      properties:
+        totalRows:
+          type: integer
+          example: 100
+        successfulRows:
+          type: integer
+          example: 95
+        failedRows:
+          type: integer
+          example: 5
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              rowNumber:
+                type: integer
+                example: 10
+              deviceId:
+                type: string
+                example: "device_001"
+              errorMessage:
+                type: string
+                example: "Invalid price format"
+
     # オプション関連
     Option:
       type: object
@@ -2010,4 +2339,4 @@ tags:
   - name: Shipping
     description: "配送管理"
   - name: MNP
-    description: "番号ポータビリティ"          
+    description: "番号ポータビリティ"                                        
