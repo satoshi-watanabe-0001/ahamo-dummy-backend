@@ -115,6 +115,56 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /api/pricing/calculate:
+    post:
+      tags:
+        - Pricing
+      summary: "包括的価格計算"
+      description: "プラン、デバイス、オプション、割引を含む包括的な価格計算を行います"
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricingCalculationRequest'
+      responses:
+        '200':
+          description: "価格計算結果"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingCalculationResult'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/pricing/estimate:
+    post:
+      tags:
+        - Pricing
+      summary: "見積生成"
+      description: "詳細な見積書を生成します"
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstimateRequest'
+      responses:
+        '200':
+          description: "見積結果"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateResult'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/compare-fee-plans:
     post:
       tags:
@@ -2630,6 +2680,450 @@ components:
           type: string
           format: date
 
+    PricingCalculationRequest:
+      type: object
+      required:
+        - plan_id
+        - device_id
+        - payment_option
+        - data_usage
+        - call_minutes
+        - sms_count
+      properties:
+        plan_id:
+          type: string
+          example: "plan_basic_001"
+        device_id:
+          type: string
+          example: "device_iphone15_001"
+        device_color:
+          type: string
+          example: "ブラック"
+        device_storage:
+          type: string
+          example: "128GB"
+        payment_option:
+          type: string
+          enum: [LUMP_SUM, INSTALLMENT_24, INSTALLMENT_36]
+          example: "INSTALLMENT_24"
+        trade_in_device_id:
+          type: string
+          example: "device_old_001"
+        selected_option_ids:
+          type: array
+          items:
+            type: string
+          example: ["option_insurance_001", "option_service_001"]
+        data_usage:
+          type: number
+          format: decimal
+          example: 5.5
+        call_minutes:
+          type: number
+          format: decimal
+          example: 120.0
+        sms_count:
+          type: number
+          format: decimal
+          example: 50.0
+        is_new_customer:
+          type: boolean
+          example: true
+        is_mnp_transfer:
+          type: boolean
+          example: false
+
+    PricingCalculationResult:
+      type: object
+      properties:
+        monthly_total:
+          type: number
+          format: decimal
+          example: 4500.00
+        initial_cost:
+          type: number
+          format: decimal
+          example: 3000.00
+        total_amount:
+          type: number
+          format: decimal
+          example: 7500.00
+        tax_included:
+          type: number
+          format: decimal
+          example: 8250.00
+        breakdown:
+          $ref: '#/components/schemas/PricingBreakdown'
+
+    PricingBreakdown:
+      type: object
+      properties:
+        base_fee:
+          type: number
+          format: decimal
+          example: 2980.00
+        call_fee:
+          type: number
+          format: decimal
+          example: 2640.00
+        data_fee:
+          type: number
+          format: decimal
+          example: 0.00
+        device_cost:
+          $ref: '#/components/schemas/DeviceCost'
+        option_fees:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionFee'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Discount'
+        campaigns:
+          type: array
+          items:
+            $ref: '#/components/schemas/Campaign'
+
+    DeviceCost:
+      type: object
+      properties:
+        device_id:
+          type: string
+          example: "device_iphone15_001"
+        device_name:
+          type: string
+          example: "iPhone 15"
+        total_price:
+          type: number
+          format: decimal
+          example: 124800.00
+        monthly_payment:
+          type: number
+          format: decimal
+          example: 5200.00
+        payment_option:
+          type: string
+          example: "24回分割"
+        trade_in_discount:
+          type: number
+          format: decimal
+          example: 10000.00
+
+    OptionFee:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "option_insurance_001"
+        name:
+          type: string
+          example: "あんしん保証サービス"
+        monthly_fee:
+          type: number
+          format: decimal
+          example: 550.00
+        one_time_fee:
+          type: number
+          format: decimal
+          example: 0.00
+
+    Discount:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "new_customer_discount"
+        name:
+          type: string
+          example: "新規契約割引"
+        amount:
+          type: number
+          format: decimal
+          example: 1000.00
+        type:
+          type: string
+          example: "固定額"
+
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "plan_campaign_001"
+        name:
+          type: string
+          example: "プランキャンペーン"
+        discount_amount:
+          type: number
+          format: decimal
+          example: 500.00
+        valid_until:
+          type: string
+          example: "2024-12-31T23:59:59"
+
+    EstimateRequest:
+      type: object
+      required:
+        - plan_id
+        - device_id
+        - payment_option
+        - estimate_period_months
+      properties:
+        plan_id:
+          type: string
+          example: "plan_basic_001"
+        device_id:
+          type: string
+          example: "device_iphone15_001"
+        device_color:
+          type: string
+          example: "ブラック"
+        device_storage:
+          type: string
+          example: "128GB"
+        payment_option:
+          type: string
+          enum: [LUMP_SUM, INSTALLMENT_24, INSTALLMENT_36]
+          example: "INSTALLMENT_24"
+        trade_in_device_id:
+          type: string
+          example: "device_old_001"
+        selected_option_ids:
+          type: array
+          items:
+            type: string
+          example: ["option_insurance_001", "option_service_001"]
+        is_new_customer:
+          type: boolean
+          example: true
+        is_mnp_transfer:
+          type: boolean
+          example: false
+        estimate_period_months:
+          type: integer
+          example: 24
+
+    EstimateResult:
+      type: object
+      properties:
+        estimate_id:
+          type: string
+          example: "est_12345678-1234-1234-1234-123456789012"
+        created_at:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+        summary:
+          $ref: '#/components/schemas/EstimateSummary'
+        monthly_breakdowns:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonthlyBreakdown'
+        details:
+          $ref: '#/components/schemas/EstimateDetails'
+
+    EstimateSummary:
+      type: object
+      properties:
+        total_initial_cost:
+          type: number
+          format: decimal
+          example: 3000.00
+        average_monthly_fee:
+          type: number
+          format: decimal
+          example: 4500.00
+        total_amount_for_period:
+          type: number
+          format: decimal
+          example: 111000.00
+        total_tax_amount:
+          type: number
+          format: decimal
+          example: 11100.00
+        estimate_period_months:
+          type: integer
+          example: 24
+
+    MonthlyBreakdown:
+      type: object
+      properties:
+        month:
+          type: integer
+          example: 1
+        base_fee:
+          type: number
+          format: decimal
+          example: 2980.00
+        device_payment:
+          type: number
+          format: decimal
+          example: 5200.00
+        option_fees:
+          type: number
+          format: decimal
+          example: 990.00
+        discounts:
+          type: number
+          format: decimal
+          example: 1500.00
+        subtotal:
+          type: number
+          format: decimal
+          example: 7670.00
+        tax:
+          type: number
+          format: decimal
+          example: 767.00
+        total:
+          type: number
+          format: decimal
+          example: 8437.00
+
+    EstimateDetails:
+      type: object
+      properties:
+        plan:
+          $ref: '#/components/schemas/PlanDetails'
+        device:
+          $ref: '#/components/schemas/DeviceDetails'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionDetails'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscountDetails'
+        campaigns:
+          type: array
+          items:
+            $ref: '#/components/schemas/CampaignDetails'
+
+    PlanDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "plan_basic_001"
+        name:
+          type: string
+          example: "ベーシックプラン"
+        description:
+          type: string
+          example: "月額2,980円の基本プラン"
+        monthly_fee:
+          type: number
+          format: decimal
+          example: 2980.00
+        data_capacity:
+          type: string
+          example: "20GB"
+        voice_calls:
+          type: string
+          example: "5分以内無料"
+
+    DeviceDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "device_iphone15_001"
+        name:
+          type: string
+          example: "iPhone 15"
+        brand:
+          type: string
+          example: "Apple"
+        color:
+          type: string
+          example: "ブラック"
+        storage:
+          type: string
+          example: "128GB"
+        price:
+          type: number
+          format: decimal
+          example: 124800.00
+        payment_option:
+          type: string
+          example: "24回分割"
+        monthly_payment:
+          type: number
+          format: decimal
+          example: 5200.00
+        trade_in_value:
+          type: number
+          format: decimal
+          example: 10000.00
+
+    OptionDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "option_insurance_001"
+        name:
+          type: string
+          example: "あんしん保証サービス"
+        category:
+          type: string
+          example: "insurance"
+        monthly_fee:
+          type: number
+          format: decimal
+          example: 550.00
+        one_time_fee:
+          type: number
+          format: decimal
+          example: 0.00
+
+    DiscountDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "new_customer_discount"
+        name:
+          type: string
+          example: "新規契約割引"
+        amount:
+          type: number
+          format: decimal
+          example: 1000.00
+        type:
+          type: string
+          example: "固定額"
+        description:
+          type: string
+          example: "新規契約のお客様向け割引"
+
+    CampaignDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "plan_campaign_001"
+        name:
+          type: string
+          example: "プランキャンペーン"
+        discount_amount:
+          type: number
+          format: decimal
+          example: 500.00
+        valid_from:
+          type: string
+          example: "2024-01-01T00:00:00"
+        valid_until:
+          type: string
+          example: "2024-12-31T23:59:59"
+        description:
+          type: string
+          example: "期間限定プランキャンペーン"
+
     # エラースキーマ
     Error:
       type: object
@@ -2761,4 +3255,6 @@ tags:
   - name: Inventory
     description: "在庫管理"
   - name: Fees
-    description: "料金計算"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+    description: "料金計算"
+  - name: Pricing
+    description: "包括的価格計算・見積"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                

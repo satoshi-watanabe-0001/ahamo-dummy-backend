@@ -18,6 +18,8 @@ public class AdminPlanResponse {
     private BigDecimal monthlyFee;
     private String dataCapacity;
     private String voiceCalls;
+    private String sms;
+    private java.util.List<String> features;
     
     private String version;
     private String parentPlanId;

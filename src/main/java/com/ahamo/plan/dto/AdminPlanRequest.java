@@ -30,6 +30,9 @@ public class AdminPlanRequest {
     @NotBlank(message = "Voice calls is required")
     private String voiceCalls;
     
+    private String sms;
+    private java.util.List<String> features;
+    
     private LocalDateTime effectiveStartDate;
     private LocalDateTime effectiveEndDate;
     
