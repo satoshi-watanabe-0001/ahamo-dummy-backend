@@ -4,6 +4,8 @@ import com.ahamo.mnp.dto.MnpEligibilityRequest;
 import com.ahamo.mnp.dto.MnpEligibilityResponse;
 import com.ahamo.mnp.dto.MnpRequest;
 import com.ahamo.mnp.dto.MnpResponse;
+import com.ahamo.mnp.dto.ReservationValidationRequest;
+import com.ahamo.mnp.dto.ReservationValidationResponse;
 import com.ahamo.mnp.service.MnpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,5 +38,18 @@ public class MnpController {
     public ResponseEntity<MnpResponse> getMnpStatus(@PathVariable String mnpId) {
         MnpResponse response = mnpService.getMnpStatus(mnpId);
         return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/mnp/validate-reservation")
+    public ResponseEntity<ReservationValidationResponse> validateReservationNumber(
+            @Valid @RequestBody ReservationValidationRequest request) {
+        ReservationValidationResponse response = mnpService.validateReservationNumber(request);
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/mnp/detect-carrier")
+    public ResponseEntity<String> detectCarrier(@RequestParam String reservationNumber) {
+        String carrier = mnpService.detectCarrierFromReservationNumber(reservationNumber);
+        return ResponseEntity.ok(carrier);
     }
 }

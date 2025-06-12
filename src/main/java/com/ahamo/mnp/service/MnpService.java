@@ -11,4 +11,8 @@ public interface MnpService {
     MnpResponse getMnpStatus(String mnpId);
     
     void processPendingRequests();
+    
+    ReservationValidationResponse validateReservationNumber(ReservationValidationRequest request);
+    
+    String detectCarrierFromReservationNumber(String reservationNumber);
 }
