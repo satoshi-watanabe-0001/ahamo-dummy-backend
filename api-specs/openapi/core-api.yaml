@@ -1176,6 +1176,295 @@ paths:
           $ref: '#/components/responses/BadRequestError'
 
   # ========================================
+  # ========================================
+  
+  /contracts/templates:
+    get:
+      tags:
+        - Contract Templates
+      summary: 契約テンプレート一覧取得
+      description: 利用可能な契約テンプレートの一覧を取得
+      responses:
+        '200':
+          description: テンプレート一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContractTemplate'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      tags:
+        - Contract Templates
+      summary: 契約テンプレート作成
+      description: 新しい契約テンプレートを作成
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractTemplateCreateRequest'
+      responses:
+        '201':
+          description: テンプレート作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractTemplate'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /contracts/templates/{templateId}:
+    get:
+      tags:
+        - Contract Templates
+      summary: 契約テンプレート詳細取得
+      description: 指定テンプレートの詳細情報を取得
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          description: テンプレートID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: テンプレート詳細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractTemplate'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Contract Templates
+      summary: 契約テンプレート更新
+      description: 契約テンプレートを更新（新バージョン作成）
+      parameters:
+        - name: templateId
+          in: path
+          required: true
+          description: テンプレートID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractTemplateUpdateRequest'
+      responses:
+        '200':
+          description: テンプレート更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractTemplate'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /contracts/{contractId}/generate:
+    post:
+      tags:
+        - Contract Generation
+      summary: 契約書生成
+      description: 顧客情報に基づいて動的に契約書を生成
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          description: 契約ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractGenerationRequest'
+      responses:
+        '200':
+          description: 契約書生成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractGenerationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /contracts/{contractId}/sign:
+    post:
+      tags:
+        - Electronic Signature
+      summary: 電子署名実行
+      description: 契約書に電子署名を実行し、タイムスタンプを付与
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          description: 契約ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElectronicSignatureRequest'
+      responses:
+        '200':
+          description: 電子署名成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ElectronicSignatureResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /contracts/{contractId}/document:
+    get:
+      tags:
+        - Contract Documents
+      summary: 契約書文書取得
+      description: 署名済み契約書文書を取得
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          description: 契約ID
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          description: 文書形式
+          required: false
+          schema:
+            type: string
+            enum: [pdf, html]
+            default: pdf
+      responses:
+        '200':
+          description: 契約書文書
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractDocumentResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /contracts/{contractId}/audit-trail:
+    get:
+      tags:
+        - Contract Audit
+      summary: 監査証跡取得
+      description: 契約に関する監査証跡を取得
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          description: 契約ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 監査証跡
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractAuditTrailResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /contracts/search:
+    get:
+      tags:
+        - Contract Search
+      summary: 契約検索
+      description: 条件を指定して契約を検索
+      parameters:
+        - name: customer_name
+          in: query
+          description: 顧客名
+          required: false
+          schema:
+            type: string
+        - name: contract_number
+          in: query
+          description: 契約番号
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: 契約ステータス
+          required: false
+          schema:
+            type: string
+            enum: [draft, pending, signed, active, cancelled]
+        - name: date_from
+          in: query
+          description: 作成日時（開始）
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          description: 作成日時（終了）
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          description: ページ番号
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: 1ページあたりの件数
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: 検索結果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  # ========================================
   # eKYC・本人確認
   # ========================================
   /ekyc/session:
@@ -2377,6 +2666,348 @@ components:
           items:
             type: string
 
+    ContractTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: テンプレート名
+        description:
+          type: string
+          description: テンプレート説明
+        version:
+          type: string
+          description: テンプレートバージョン
+        format:
+          type: string
+          enum: [html, pdf]
+          description: テンプレート形式
+        content:
+          type: string
+          description: テンプレート内容
+        variables:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+                enum: [string, number, date, boolean]
+              required:
+                type: boolean
+              description:
+                type: string
+        is_active:
+          type: boolean
+          description: アクティブ状態
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+        updated_by:
+          type: string
+
+    ContractTemplateCreateRequest:
+      type: object
+      required:
+        - name
+        - format
+        - content
+      properties:
+        name:
+          type: string
+          description: テンプレート名
+        description:
+          type: string
+          description: テンプレート説明
+        format:
+          type: string
+          enum: [html, pdf]
+          description: テンプレート形式
+        content:
+          type: string
+          description: テンプレート内容
+        variables:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+                enum: [string, number, date, boolean]
+              required:
+                type: boolean
+              description:
+                type: string
+
+    ContractTemplateUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: テンプレート名
+        description:
+          type: string
+          description: テンプレート説明
+        content:
+          type: string
+          description: テンプレート内容
+        variables:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+                enum: [string, number, date, boolean]
+              required:
+                type: boolean
+              description:
+                type: string
+        change_reason:
+          type: string
+          description: 変更理由
+
+    ContractGenerationRequest:
+      type: object
+      required:
+        - template_id
+      properties:
+        template_id:
+          type: string
+          format: uuid
+          description: 使用するテンプレートID
+        variables:
+          type: object
+          description: テンプレート変数の値
+          additionalProperties: true
+        format:
+          type: string
+          enum: [html, pdf]
+          default: pdf
+          description: 生成形式
+
+    ContractGenerationResponse:
+      type: object
+      properties:
+        document_id:
+          type: string
+          format: uuid
+          description: 生成された文書ID
+        document_url:
+          type: string
+          format: uri
+          description: 文書アクセスURL
+        format:
+          type: string
+          enum: [html, pdf]
+          description: 生成形式
+        generated_at:
+          type: string
+          format: date-time
+          description: 生成日時
+        expires_at:
+          type: string
+          format: date-time
+          description: URL有効期限
+
+    ElectronicSignatureRequest:
+      type: object
+      required:
+        - signature_method
+      properties:
+        signature_method:
+          type: string
+          enum: [embedded, remote, cloud]
+          description: 署名方式
+        signer_info:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+            phone:
+              type: string
+          required:
+            - name
+            - email
+        return_url:
+          type: string
+          format: uri
+          description: 署名完了後のリダイレクトURL
+        webhook_url:
+          type: string
+          format: uri
+          description: 署名完了通知URL
+
+    ElectronicSignatureResponse:
+      type: object
+      properties:
+        signature_id:
+          type: string
+          format: uuid
+          description: 署名ID
+        signature_url:
+          type: string
+          format: uri
+          description: 署名実行URL
+        status:
+          type: string
+          enum: [pending, in_progress, completed, failed, expired]
+          description: 署名ステータス
+        signed_at:
+          type: string
+          format: date-time
+          description: 署名完了日時
+        certificate_info:
+          type: object
+          properties:
+            certificate_id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            tsa_url:
+              type: string
+              format: uri
+            hash_algorithm:
+              type: string
+        expires_at:
+          type: string
+          format: date-time
+          description: 署名URL有効期限
+
+    ContractDocumentResponse:
+      type: object
+      properties:
+        document_id:
+          type: string
+          format: uuid
+        contract_id:
+          type: string
+          format: uuid
+        document_url:
+          type: string
+          format: uri
+          description: 文書ダウンロードURL
+        format:
+          type: string
+          enum: [pdf, html]
+        file_size:
+          type: integer
+          description: ファイルサイズ（バイト）
+        signature_status:
+          type: string
+          enum: [unsigned, signed, verified]
+        created_at:
+          type: string
+          format: date-time
+        signed_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+          description: URL有効期限
+
+    ContractAuditTrailResponse:
+      type: object
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+        audit_events:
+          type: array
+          items:
+            type: object
+            properties:
+              event_id:
+                type: string
+                format: uuid
+              event_type:
+                type: string
+                enum: [created, updated, generated, signed, viewed, downloaded]
+              timestamp:
+                type: string
+                format: date-time
+              user_id:
+                type: string
+              user_name:
+                type: string
+              ip_address:
+                type: string
+              user_agent:
+                type: string
+              details:
+                type: object
+                additionalProperties: true
+              evidence:
+                type: object
+                properties:
+                  certificate_id:
+                    type: string
+                  timestamp_token:
+                    type: string
+                  hash_value:
+                    type: string
+        generated_at:
+          type: string
+          format: date-time
+
+    ContractSearchResponse:
+      type: object
+      properties:
+        contracts:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              contract_number:
+                type: string
+              customer_name:
+                type: string
+              status:
+                type: string
+                enum: [draft, pending, signed, active, cancelled]
+              created_at:
+                type: string
+                format: date-time
+              signed_at:
+                type: string
+                format: date-time
+              total_amount:
+                type: number
+                format: decimal
+        pagination:
+          type: object
+          properties:
+            current_page:
+              type: integer
+            total_pages:
+              type: integer
+            total_count:
+              type: integer
+            per_page:
+              type: integer
+
     CustomerInfo:
       type: object
       properties:
@@ -3257,4 +3888,4 @@ tags:
   - name: Fees
     description: "料金計算"
   - name: Pricing
-    description: "包括的価格計算・見積"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+    description: "包括的価格計算・見積"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
