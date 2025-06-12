@@ -119,6 +119,8 @@ class PlanTest {
             new BigDecimal("3980.00"),
             "30GB",
             "無制限",
+            "SMS無制限",
+            java.util.Arrays.asList("5G対応", "テザリング無料"),
             "2.0.0",
             "plan_001",
             true,
