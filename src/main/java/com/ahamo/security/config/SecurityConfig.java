@@ -48,6 +48,7 @@ public class SecurityConfig {
                                    "/v1/options/**", "/v1/mnp/eligibility", "/v1/payments/methods",
                                    "/api/v1/plans/**", "/h2-console/**", "/actuator/**").permitAll()
                         .antMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .antMatchers("/v1/payments/**").authenticated()
                         .anyRequest().authenticated()
                 );
 
