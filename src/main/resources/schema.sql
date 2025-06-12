@@ -181,4 +181,57 @@ CREATE INDEX idx_inventory_status ON inventory(available_stock, alert_threshold)
 CREATE INDEX idx_reservation_expiry ON reservations(expires_at, status);
 CREATE INDEX idx_reservation_status ON reservations(status);
 CREATE INDEX idx_inventory_updated ON inventory(updated_at);
+
+CREATE TABLE IF NOT EXISTS mnp_requests (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    mnp_id VARCHAR(255) UNIQUE NOT NULL,
+    contract_id VARCHAR(255),
+    phone_number VARCHAR(20) NOT NULL,
+    current_carrier VARCHAR(50) NOT NULL,
+    account_name VARCHAR(255),
+    account_number VARCHAR(255),
+    account_password VARCHAR(255),
+    reservation_number VARCHAR(50),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED')),
+    type VARCHAR(20) NOT NULL CHECK (type IN ('TRANSFER_IN', 'TRANSFER_OUT', 'ELIGIBILITY_CHECK')),
+    desired_porting_date DATE,
+    estimated_completion_date DATE,
+    actual_completion_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS mnp_status_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    mnp_request_id BIGINT NOT NULL,
+    from_status VARCHAR(20),
+    to_status VARCHAR(20) NOT NULL,
+    reason TEXT,
+    error_message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    FOREIGN KEY (mnp_request_id) REFERENCES mnp_requests(id)
+);
+
+CREATE TABLE IF NOT EXISTS carrier_info (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    carrier_code VARCHAR(50) UNIQUE NOT NULL,
+    carrier_name VARCHAR(255) NOT NULL,
+    api_endpoint VARCHAR(500),
+    api_key VARCHAR(255),
+    timeout_seconds INT DEFAULT 30,
+    retry_attempts INT DEFAULT 3,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_mnp_requests_phone ON mnp_requests(phone_number);
+CREATE INDEX idx_mnp_requests_status ON mnp_requests(status);
+CREATE INDEX idx_mnp_requests_carrier ON mnp_requests(current_carrier);
+CREATE INDEX idx_mnp_requests_created ON mnp_requests(created_at);
+CREATE INDEX idx_mnp_status_history_request ON mnp_status_history(mnp_request_id);
+CREATE INDEX idx_carrier_info_code ON carrier_info(carrier_code);
 >>>>>>> 7abdf50 (SCRUM-46: 在庫管理システム実装)
