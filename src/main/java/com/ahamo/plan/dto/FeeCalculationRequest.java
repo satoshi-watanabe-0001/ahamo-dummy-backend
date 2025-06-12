@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.DecimalMin;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -28,4 +29,6 @@ public class FeeCalculationRequest {
     @NotNull(message = "SMS count is required")
     @DecimalMin(value = "0.0", message = "SMS count must be positive")
     private BigDecimal smsCount;
+    
+    private List<String> selectedOptionIds;
 }

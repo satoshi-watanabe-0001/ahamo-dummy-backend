@@ -4,6 +4,8 @@ import com.ahamo.plan.dto.FeeCalculationRequest;
 import com.ahamo.plan.dto.FeeCalculationResult;
 import com.ahamo.plan.model.Plan;
 import com.ahamo.plan.repository.PlanRepository;
+import com.ahamo.option.repository.OptionRepository;
+import com.ahamo.option.model.Option;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +14,14 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FeeCalculationServiceImpl implements FeeCalculationService {
     
     private final PlanRepository planRepository;
+    private final OptionRepository optionRepository;
     
     private static final BigDecimal TAX_RATE = new BigDecimal("0.10");
     private static final BigDecimal CALL_FEE_PER_MINUTE = new BigDecimal("22.00");
@@ -35,7 +39,7 @@ public class FeeCalculationServiceImpl implements FeeCalculationService {
         BigDecimal dataFee = calculateDataFee(request.getDataUsage(), plan);
         BigDecimal smsFee = request.getSmsCount().multiply(SMS_FEE_PER_MESSAGE);
         
-        List<FeeCalculationResult.OptionFee> optionFees = getDefaultOptionFees();
+        List<FeeCalculationResult.OptionFee> optionFees = calculateOptionFees(request.getSelectedOptionIds());
         BigDecimal totalOptionFees = optionFees.stream()
                 .map(FeeCalculationResult.OptionFee::getFee)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -84,6 +88,21 @@ public class FeeCalculationServiceImpl implements FeeCalculationService {
     
     private List<FeeCalculationResult.OptionFee> getDefaultOptionFees() {
         return new ArrayList<>();
+    }
+    
+    private List<FeeCalculationResult.OptionFee> calculateOptionFees(List<String> selectedOptionIds) {
+        if (selectedOptionIds == null || selectedOptionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<Option> selectedOptions = optionRepository.findAllById(selectedOptionIds);
+        return selectedOptions.stream()
+                .map(option -> FeeCalculationResult.OptionFee.builder()
+                        .id(option.getId())
+                        .name(option.getName())
+                        .fee(option.getMonthlyFee())
+                        .build())
+                .collect(Collectors.toList());
     }
     
     private List<FeeCalculationResult.Discount> getDefaultDiscounts() {

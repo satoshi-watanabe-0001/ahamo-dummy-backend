@@ -35,4 +35,11 @@ public class FeeController {
         
         return ResponseEntity.ok(Map.of("results", results));
     }
+    
+    @PostMapping("/calculate-total")
+    public ResponseEntity<FeeCalculationResult> calculateTotal(
+            @Valid @RequestBody FeeCalculationRequest request) {
+        FeeCalculationResult result = feeCalculationService.calculateFee(request);
+        return ResponseEntity.ok(result);
+    }
 }
