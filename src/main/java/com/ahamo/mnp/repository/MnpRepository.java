@@ -34,6 +34,8 @@ public interface MnpRepository extends JpaRepository<MnpRequest, Long> {
         @Param("statuses") List<MnpRequest.MnpStatus> statuses);
 
     boolean existsByPhoneNumberAndStatusIn(String phoneNumber, List<MnpRequest.MnpStatus> statuses);
+    
+    boolean existsByReservationNumber(String reservationNumber);
 
     @Query("SELECT COUNT(m) FROM MnpRequest m WHERE m.currentCarrier = :carrier AND m.status = :status")
     Long countByCarrierAndStatus(

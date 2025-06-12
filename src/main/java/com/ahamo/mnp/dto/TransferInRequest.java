@@ -14,6 +14,7 @@ public class TransferInRequest {
     private String phoneNumber;
     
     @NotBlank(message = "MNP予約番号は必須です")
+    @Pattern(regexp = "^\\d{10}$", message = "MNP予約番号は10桁の数字で入力してください")
     private String reservationNumber;
     
     @NotBlank(message = "転出元キャリアは必須です")

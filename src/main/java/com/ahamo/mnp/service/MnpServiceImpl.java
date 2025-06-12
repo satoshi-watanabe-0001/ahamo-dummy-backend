@@ -11,10 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -183,6 +180,101 @@ public class MnpServiceImpl implements MnpService {
         } catch (Exception e) {
             stateManager.transitionStateWithError(request.getId(), MnpRequest.MnpStatus.FAILED,
                     "キャリアとの通信でエラーが発生しました", e.getMessage(), "SYSTEM");
+        }
+    }
+
+    @Override
+    public ReservationValidationResponse validateReservationNumber(ReservationValidationRequest request) {
+        log.info("Validating reservation number: {} for phone: {}", 
+                request.getReservationNumber(), request.getPhoneNumber());
+
+        List<String> validationErrors = new ArrayList<>();
+        
+        boolean isDuplicate = mnpRepository.existsByReservationNumber(request.getReservationNumber());
+        
+        String detectedCarrier = detectCarrierFromReservationNumber(request.getReservationNumber());
+        if (detectedCarrier == null) {
+            validationErrors.add("予約番号からキャリアを特定できませんでした");
+        }
+        
+        LocalDate expirationDate = LocalDate.now().plusDays(15);
+        boolean isExpired = LocalDate.now().isAfter(expirationDate);
+        
+        if (detectedCarrier != null) {
+            switch (detectedCarrier.toUpperCase()) {
+                case "DOCOMO":
+                    expirationDate = LocalDate.now().plusDays(15);
+                    break;
+                case "AU":
+                    expirationDate = LocalDate.now().plusDays(15);
+                    break;
+                case "SOFTBANK":
+                    expirationDate = LocalDate.now().plusDays(15);
+                    break;
+                case "RAKUTEN":
+                    expirationDate = LocalDate.now().plusDays(15);
+                    break;
+            }
+        }
+        
+        if (isDuplicate) {
+            validationErrors.add("この予約番号は既に使用されています");
+        }
+        
+        if (isExpired) {
+            validationErrors.add("予約番号の有効期限が切れています");
+        }
+        
+        boolean isValid = validationErrors.isEmpty();
+        String message = isValid ? "予約番号の検証が完了しました" : "予約番号の検証でエラーが発生しました";
+        
+        return ReservationValidationResponse.builder()
+                .valid(isValid)
+                .reservationNumber(request.getReservationNumber())
+                .detectedCarrier(detectedCarrier)
+                .expirationDate(expirationDate)
+                .expired(isExpired)
+                .duplicate(isDuplicate)
+                .validationErrors(validationErrors)
+                .message(message)
+                .build();
+    }
+
+    @Override
+    public String detectCarrierFromReservationNumber(String reservationNumber) {
+        if (reservationNumber == null || reservationNumber.length() != 10) {
+            return null;
+        }
+        
+        String firstTwoDigits = reservationNumber.substring(0, 2);
+        
+        switch (firstTwoDigits) {
+            case "11":
+            case "12":
+            case "13":
+                return "DOCOMO";
+            case "21":
+            case "22":
+            case "23":
+                return "AU";
+            case "31":
+            case "32":
+            case "33":
+                return "SOFTBANK";
+            case "41":
+            case "42":
+                return "RAKUTEN";
+            default:
+                if (reservationNumber.startsWith("1")) {
+                    return "DOCOMO";
+                } else if (reservationNumber.startsWith("2")) {
+                    return "AU";
+                } else if (reservationNumber.startsWith("3")) {
+                    return "SOFTBANK";
+                } else if (reservationNumber.startsWith("4")) {
+                    return "RAKUTEN";
+                }
+                return null;
         }
     }
 
