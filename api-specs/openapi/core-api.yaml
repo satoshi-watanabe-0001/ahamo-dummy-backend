@@ -90,6 +90,69 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
+  /api/calculate-fee:
+    post:
+      tags:
+        - Fees
+      summary: 料金計算
+      description: 入力された使用量に基づいて料金を計算
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeCalculationRequest'
+      responses:
+        '200':
+          description: 計算結果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeCalculationResult'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/compare-fee-plans:
+    post:
+      tags:
+        - Fees
+      summary: プラン料金比較
+      description: 複数プランの料金を一括計算・比較
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usage:
+                  $ref: '#/components/schemas/UsageInput'
+                planIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: 比較結果
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/FeeCalculationResult'
+                        - type: object
+                          properties:
+                            planId:
+                              type: string
+
   /users/profile:
     get:
       tags:
@@ -1697,6 +1760,96 @@ components:
                         example: 2
               description: "割引情報一覧"
 
+    FeeCalculationRequest:
+      type: object
+      required:
+        - planId
+        - dataUsage
+        - callMinutes
+        - smsCount
+      properties:
+        planId:
+          type: string
+          example: "plan_basic_001"
+        dataUsage:
+          type: number
+          minimum: 0
+          example: 15
+          description: "データ使用量（GB）"
+        callMinutes:
+          type: number
+          minimum: 0
+          example: 120
+          description: "通話時間（分）"
+        smsCount:
+          type: number
+          minimum: 0
+          example: 20
+          description: "SMS送信回数"
+
+    UsageInput:
+      type: object
+      required:
+        - dataUsage
+        - callMinutes
+        - smsCount
+      properties:
+        dataUsage:
+          type: number
+          minimum: 0
+        callMinutes:
+          type: number
+          minimum: 0
+        smsCount:
+          type: number
+          minimum: 0
+
+    FeeCalculationResult:
+      type: object
+      properties:
+        totalFee:
+          type: number
+          example: 3500.00
+          description: "合計料金（税抜）"
+        breakdown:
+          type: object
+          properties:
+            baseFee:
+              type: number
+              example: 2980.00
+            callFee:
+              type: number
+              example: 0.00
+            dataFee:
+              type: number
+              example: 550.00
+            optionFees:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  fee:
+                    type: number
+            discounts:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  amount:
+                    type: number
+        taxIncluded:
+          type: number
+          example: 3850.00
+          description: "税込料金"
+
     AdminPlanResponse:
       allOf:
         - $ref: '#/components/schemas/Plan'
@@ -2606,4 +2759,6 @@ tags:
   - name: MNP
     description: "番号ポータビリティ"
   - name: Inventory
-    description: "在庫管理"                                                                                                                                                                                                                                                                                                                                
+    description: "在庫管理"
+  - name: Fees
+    description: "料金計算"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
