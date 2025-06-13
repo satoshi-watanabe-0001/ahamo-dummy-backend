@@ -1,5 +1,6 @@
 package com.ahamo.plan.dto;
 
+import com.ahamo.plan.model.Plan;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -21,4 +22,17 @@ public class PlanResponse {
     private List<String> features;
     private Boolean isActive;
     private Boolean isPopular;
+    
+    public static PlanResponse fromPlan(Plan plan) {
+        PlanResponse response = new PlanResponse();
+        response.setId(plan.getId());
+        response.setName(plan.getName());
+        response.setDescription(plan.getDescription());
+        response.setMonthlyFee(plan.getMonthlyFee());
+        response.setDataCapacity(plan.getDataCapacity());
+        response.setVoiceCalls(plan.getVoiceCalls());
+        response.setSms(plan.getSms());
+        response.setIsActive(plan.getIsCurrentVersion());
+        return response;
+    }
 }
