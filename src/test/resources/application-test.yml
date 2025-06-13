@@ -1,0 +1,104 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql,classpath:data-inventory.sql,classpath:data-mnp.sql
+  
+  # テスト環境ではRedisを無効化
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  
+  cache:
+    type: simple
+  
+  # テスト環境ではメール送信を無効化
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+jwt:
+  secret: testSecretKey123456789012345678901234567890
+  access-token-expiration: 3600000
+  refresh-token-expiration: 86400000
+
+# テスト環境ではTwilio設定を無効化
+twilio:
+  account-sid: test-account-sid
+  auth-token: test-auth-token
+  phone-number: +1234567890
+
+security:
+  rate-limit:
+    login-attempts: 5
+    time-window: 300000
+  session:
+    timeout: 86400000
+  encryption:
+    key: testEncryptionKey123456789012345678901
+
+logging:
+  level:
+    com.ahamo: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# テスト環境では監視機能を無効化
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+    metrics:
+      enabled: false
+    prometheus:
+      enabled: false
+
+# テスト環境ではバックアップを無効化
+backup:
+  enabled: false
+
+# テスト環境ではアラートを無効化
+alerts:
+  enabled: false
