@@ -2,8 +2,18 @@ package com.ahamo.contract.controller;
 
 import com.ahamo.contract.dto.*;
 import com.ahamo.contract.model.Contract;
+import com.ahamo.contract.model.ContractChangeHistory;
 import com.ahamo.contract.model.ContractTemplate;
 import com.ahamo.contract.service.*;
+import com.ahamo.plan.dto.FeeCalculationResult;
+import com.ahamo.plan.dto.OptionResponse;
+import com.ahamo.plan.dto.PlanResponse;
+import com.ahamo.plan.model.Plan;
+import com.ahamo.option.model.Option;
+import com.ahamo.plan.service.PlanService;
+import com.ahamo.option.service.OptionService;
+import com.ahamo.plan.service.FeeCalculationService;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,6 +44,9 @@ public class ContractController {
     private final DocumentStorageService documentStorageService;
     private final ContractAuditService auditService;
     private final ContractService contractService;
+    private final PlanService planService;
+    private final OptionService optionService;
+    private final FeeCalculationService feeCalculationService;
 
     @GetMapping("/templates")
     public ResponseEntity<List<ContractTemplate>> getTemplates() {
@@ -215,4 +229,131 @@ public class ContractController {
     private String getCurrentUserId() {
         return "system";
     }
+
+    @GetMapping("/{contractId}/details")
+    public ResponseEntity<ContractDetailsResponse> getContractDetails(@PathVariable String contractId) {
+        log.info("Getting contract details for ID: {}", contractId);
+        try {
+            Optional<Contract> contractOpt = contractService.getContractDetails(contractId);
+            if (!contractOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            ContractDetailsResponse response = ContractDetailsResponse.fromContract(contractOpt.get());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error getting contract details for ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{contractId}/history")
+    public ResponseEntity<List<ContractChangeHistoryResponse>> getContractHistory(@PathVariable String contractId) {
+        log.info("Getting contract history for ID: {}", contractId);
+        try {
+            List<ContractChangeHistory> history = contractService.getContractHistory(contractId);
+            List<ContractChangeHistoryResponse> responses = history.stream()
+                .map(ContractChangeHistoryResponse::fromHistory)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            log.error("Error getting contract history for ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{contractId}/options")
+    public ResponseEntity<List<OptionResponse>> getCurrentOptions(@PathVariable String contractId) {
+        log.info("Getting current options for contract ID: {}", contractId);
+        try {
+            List<Option> options = contractService.getCurrentOptions(contractId);
+            List<OptionResponse> responses = options.stream()
+                .map(OptionResponse::fromOption)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            log.error("Error getting current options for contract ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/{contractId}/plan-change")
+    public ResponseEntity<ContractResponse> changePlan(@PathVariable String contractId, @RequestBody PlanChangeRequest request) {
+        log.info("Changing plan for contract ID: {} to plan: {}", contractId, request.getNewPlanId());
+        try {
+            Contract contract = contractService.changePlan(contractId, request.getNewPlanId(), request.getReason(), request.getEffectiveDate());
+            ContractResponse response = ContractResponse.fromContract(contract);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error changing plan for contract ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/{contractId}/plan-change/simulate")
+    public ResponseEntity<FeeCalculationResult> simulatePlanChange(@PathVariable String contractId, @RequestBody PlanChangeSimulationRequest request) {
+        log.info("Simulating plan change for contract ID: {} to plan: {}", contractId, request.getNewPlanId());
+        try {
+            FeeCalculationResult result = contractService.simulatePlanChange(contractId, request.getNewPlanId());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error simulating plan change for contract ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{contractId}/available-plans")
+    public ResponseEntity<List<PlanResponse>> getAvailablePlans(@PathVariable String contractId) {
+        log.info("Getting available plans for contract ID: {}", contractId);
+        try {
+            List<Plan> plans = contractService.getAvailablePlansForChange(contractId);
+            List<PlanResponse> responses = plans.stream()
+                .map(PlanResponse::fromPlan)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            log.error("Error getting available plans for contract ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/{contractId}/options")
+    public ResponseEntity<ContractResponse> addOption(@PathVariable String contractId, @RequestBody OptionRequest request) {
+        log.info("Adding option {} to contract ID: {}", request.getOptionId(), contractId);
+        try {
+            Contract contract = contractService.addOption(contractId, request.getOptionId());
+            ContractResponse response = ContractResponse.fromContract(contract);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error adding option to contract ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/{contractId}/options/{optionId}")
+    public ResponseEntity<ContractResponse> removeOption(@PathVariable String contractId, @PathVariable String optionId) {
+        log.info("Removing option {} from contract ID: {}", optionId, contractId);
+        try {
+            Contract contract = contractService.removeOption(contractId, optionId);
+            ContractResponse response = ContractResponse.fromContract(contract);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error removing option from contract ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/{contractId}/options/{optionId}/suspend")
+    public ResponseEntity<ContractResponse> suspendOption(@PathVariable String contractId, @PathVariable String optionId) {
+        log.info("Suspending option {} for contract ID: {}", optionId, contractId);
+        try {
+            Contract contract = contractService.suspendOption(contractId, optionId);
+            ContractResponse response = ContractResponse.fromContract(contract);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error suspending option for contract ID: {}", contractId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
 }
