@@ -2,6 +2,7 @@ package com.ahamo.contract.service;
 
 import com.ahamo.contract.model.Contract;
 import com.ahamo.contract.repository.ContractRepository;
+import com.ahamo.shipping.service.ShippingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import java.util.Optional;
 public class ContractServiceImpl implements ContractService {
 
     private final ContractRepository contractRepository;
+    private final ShippingService shippingService;
 
     @Override
     @Transactional(readOnly = true)
@@ -49,7 +51,18 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = contractRepository.findByContractUuid(contractId)
             .orElseThrow(() -> new IllegalArgumentException("Contract not found: " + contractId));
         
+        Contract.ContractStatus previousStatus = contract.getStatus();
         contract.setStatus(status);
         contractRepository.save(contract);
+        
+        if (status == Contract.ContractStatus.ACTIVE && previousStatus != Contract.ContractStatus.ACTIVE) {
+            try {
+                log.info("Contract activated, arranging shipping for contract: {}", contractId);
+                shippingService.arrangeShippingForContract(contract.getId());
+                log.info("Shipping arranged successfully for contract: {}", contractId);
+            } catch (Exception e) {
+                log.error("Failed to arrange shipping for contract {}: {}", contractId, e.getMessage());
+            }
+        }
     }
 }
