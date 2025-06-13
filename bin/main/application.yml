@@ -1,0 +1,98 @@
+server:
+  port: 3000
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql,classpath:data-inventory.sql,classpath:data-mnp.sql
+  
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+  
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: ${JWT_SECRET:mySecretKey123456789012345678901234567890}
+  access-token-expiration: 3600000
+  refresh-token-expiration: 86400000
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  phone-number: ${TWILIO_PHONE_NUMBER:}
+
+security:
+  rate-limit:
+    login-attempts: 5
+    time-window: 300000
+  session:
+    timeout: 86400000
+  encryption:
+    key: myDefaultEncryptionKey123456789012
+
+logging:
+  level:
+    com.ahamo: DEBUG
+    org.springframework.security: DEBUG
+
+mnp:
+  carriers:
+    docomo:
+      endpoint: "https://api.docomo.ne.jp/mnp"
+      timeout: 30
+      retry-attempts: 3
+    au:
+      endpoint: "https://api.au.com/mnp"
+      timeout: 30
+      retry-attempts: 3
+    softbank:
+      endpoint: "https://api.softbank.jp/mnp"
+      timeout: 30
+      retry-attempts: 3
+  processing:
+    batch-size: 50
+    retry-delay: 300000

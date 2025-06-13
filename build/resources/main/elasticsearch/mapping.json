@@ -1,0 +1,135 @@
+{
+  "mappings": {
+    "properties": {
+      "@timestamp": {
+        "type": "date"
+      },
+      "level": {
+        "type": "keyword"
+      },
+      "logger": {
+        "type": "keyword"
+      },
+      "thread": {
+        "type": "keyword"
+      },
+      "message": {
+        "type": "text",
+        "analyzer": "standard"
+      },
+      "application": {
+        "type": "keyword"
+      },
+      "environment": {
+        "type": "keyword"
+      },
+      "host": {
+        "type": "keyword"
+      },
+      "request_id": {
+        "type": "keyword"
+      },
+      "user_id": {
+        "type": "keyword"
+      },
+      "session_id": {
+        "type": "keyword"
+      },
+      "ip_address": {
+        "type": "ip"
+      },
+      "user_agent": {
+        "type": "text"
+      },
+      "http_method": {
+        "type": "keyword"
+      },
+      "http_status": {
+        "type": "integer"
+      },
+      "response_time": {
+        "type": "long"
+      },
+      "error_code": {
+        "type": "keyword"
+      },
+      "stack_trace": {
+        "type": "text"
+      },
+      "business_event": {
+        "type": "keyword"
+      },
+      "device_id": {
+        "type": "keyword"
+      },
+      "customer_id": {
+        "type": "keyword"
+      },
+      "plan_id": {
+        "type": "keyword"
+      },
+      "contract_id": {
+        "type": "keyword"
+      },
+      "inventory_change": {
+        "properties": {
+          "device_id": {
+            "type": "keyword"
+          },
+          "color": {
+            "type": "keyword"
+          },
+          "storage": {
+            "type": "keyword"
+          },
+          "old_stock": {
+            "type": "integer"
+          },
+          "new_stock": {
+            "type": "integer"
+          },
+          "change_type": {
+            "type": "keyword"
+          }
+        }
+      },
+      "security_event": {
+        "properties": {
+          "event_type": {
+            "type": "keyword"
+          },
+          "risk_level": {
+            "type": "keyword"
+          },
+          "blocked": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1,
+    "index": {
+      "refresh_interval": "5s",
+      "max_result_window": 50000
+    },
+    "analysis": {
+      "analyzer": {
+        "japanese_analyzer": {
+          "type": "custom",
+          "tokenizer": "kuromoji_tokenizer",
+          "filter": [
+            "kuromoji_baseform",
+            "kuromoji_part_of_speech",
+            "cjk_width",
+            "ja_stop",
+            "kuromoji_stemmer",
+            "lowercase"
+          ]
+        }
+      }
+    }
+  }
+}

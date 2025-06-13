@@ -6,7 +6,10 @@ import com.ahamo.auth.dto.LoginRequest;
 import com.ahamo.auth.dto.RegisterRequest;
 import com.ahamo.auth.dto.VerificationRequest;
 import com.ahamo.auth.service.AuthService;
+import com.ahamo.auth.service.MfaService;
 import com.ahamo.security.exception.AuthenticationException;
+import com.ahamo.security.jwt.JwtTokenProvider;
+import com.ahamo.security.service.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +31,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.context.annotation.Import;
 
 @WebMvcTest(controllers = AuthController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@ActiveProfiles("test")
 class AuthControllerTest {
 
     @Autowired
@@ -34,6 +39,15 @@ class AuthControllerTest {
 
     @MockBean
     private AuthService authService;
+
+    @MockBean
+    private MfaService mfaService;
+
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private ObjectMapper objectMapper;

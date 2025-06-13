@@ -1,0 +1,35 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  - job_name: 'ahamo-backend'
+    static_configs:
+      - targets: ['localhost:3000']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    
+  - job_name: 'system-metrics'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 15s
+    
+  - job_name: 'redis-metrics'
+    static_configs:
+      - targets: ['localhost:9121']
+    scrape_interval: 15s
+    
+  - job_name: 'elasticsearch-metrics'
+    static_configs:
+      - targets: ['localhost:9114']
+    scrape_interval: 30s

@@ -1,0 +1,62 @@
+groups:
+  - name: ahamo-backend-alerts
+    rules:
+      - alert: HighMemoryUsage
+        expr: (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          service: ahamo-backend
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 90% for more than 2 minutes"
+          
+      - alert: HighResponseTime
+        expr: http_server_requests_seconds{quantile="0.95"} > 5
+        for: 1m
+        labels:
+          severity: warning
+          service: ahamo-backend
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is above 5 seconds"
+          
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_total{status=~"5.."}[5m]) / rate(http_server_requests_total[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          service: ahamo-backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for more than 2 minutes"
+          
+      - alert: LowInventoryStock
+        expr: inventory_low_stock_items > 10
+        for: 1m
+        labels:
+          severity: warning
+          service: ahamo-backend
+        annotations:
+          summary: "Low inventory stock detected"
+          description: "More than 10 items have low stock"
+          
+      - alert: DatabaseConnectionFailure
+        expr: up{job="ahamo-backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: ahamo-backend
+        annotations:
+          summary: "Database connection failure"
+          description: "Unable to connect to the database"
+          
+      - alert: RedisConnectionFailure
+        expr: redis_up == 0
+        for: 30s
+        labels:
+          severity: warning
+          service: ahamo-backend
+        annotations:
+          summary: "Redis connection failure"
+          description: "Unable to connect to Redis"

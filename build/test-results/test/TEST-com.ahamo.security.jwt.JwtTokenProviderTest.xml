@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ahamo.security.jwt.JwtTokenProviderTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2025-06-13T06:26:36" hostname="devin-box" time="0.095">
+  <properties/>
+  <testcase name="generateRefreshToken_ValidUsername_ReturnsToken()" classname="com.ahamo.security.jwt.JwtTokenProviderTest" time="0.053"/>
+  <testcase name="generateAccessToken_ValidAuthentication_ReturnsToken()" classname="com.ahamo.security.jwt.JwtTokenProviderTest" time="0.009"/>
+  <testcase name="getUsernameFromToken_ValidToken_ReturnsUsername()" classname="com.ahamo.security.jwt.JwtTokenProviderTest" time="0.021"/>
+  <testcase name="isRefreshToken_RefreshToken_ReturnsTrue()" classname="com.ahamo.security.jwt.JwtTokenProviderTest" time="0.002"/>
+  <testcase name="validateToken_ExpiredToken_ReturnsFalse()" classname="com.ahamo.security.jwt.JwtTokenProviderTest" time="0.002"/>
+  <testcase name="validateToken_InvalidToken_ReturnsFalse()" classname="com.ahamo.security.jwt.JwtTokenProviderTest" time="0.001"/>
+  <testcase name="getExpirationDateFromToken_ValidToken_ReturnsExpiration()" classname="com.ahamo.security.jwt.JwtTokenProviderTest" time="0.003"/>
+  <testcase name="validateToken_ValidToken_ReturnsTrue()" classname="com.ahamo.security.jwt.JwtTokenProviderTest" time="0.002"/>
+  <system-out><![CDATA[2025-06-13 06:26:37 [Test worker] ERROR c.a.security.jwt.JwtTokenProvider - Expired JWT token
+06:26:37,008 |-WARN in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - Attempted to append to non started appender [FILE].
+2025-06-13 06:26:37 [Test worker] ERROR c.a.security.jwt.JwtTokenProvider - Invalid JWT token
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

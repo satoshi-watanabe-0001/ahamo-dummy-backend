@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ahamo.plan.model.PlanTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2025-06-13T06:26:36" hostname="devin-box" time="0.015">
+  <properties/>
+  <testcase name="testCampaignPeriodFields()" classname="com.ahamo.plan.model.PlanTest" time="0.001"/>
+  <testcase name="testLombokGeneratedMethods()" classname="com.ahamo.plan.model.PlanTest" time="0.011"/>
+  <testcase name="testVersionManagementFields()" classname="com.ahamo.plan.model.PlanTest" time="0.0"/>
+  <testcase name="testMetadataFields()" classname="com.ahamo.plan.model.PlanTest" time="0.0"/>
+  <testcase name="testAllArgsConstructor()" classname="com.ahamo.plan.model.PlanTest" time="0.0"/>
+  <testcase name="testPlanCreation()" classname="com.ahamo.plan.model.PlanTest" time="0.0"/>
+  <testcase name="testEffectivePeriodFields()" classname="com.ahamo.plan.model.PlanTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
