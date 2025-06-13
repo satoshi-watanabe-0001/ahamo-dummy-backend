@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ahamo.auth.service.MfaServiceTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2025-06-13T06:26:16" hostname="devin-box" time="0.046">
+  <properties/>
+  <testcase name="verifyEmailCode_ExpiredCode_ReturnsFalse()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.029"/>
+  <testcase name="verifySmsCode_InvalidCode_ReturnsFalse()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.002"/>
+  <testcase name="generateAndSendEmailVerification_ValidEmail_ReturnsCode()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.002"/>
+  <testcase name="generateAndSendSmsVerification_ValidPhoneNumber_ReturnsCode()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.001"/>
+  <testcase name="generateVerificationCode_ReturnsValidCode()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.001"/>
+  <testcase name="isCodeExpired_ValidCode_ReturnsFalse()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.002"/>
+  <testcase name="verifyEmailCode_InvalidCode_ReturnsFalse()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.002"/>
+  <testcase name="isCodeExpired_ExpiredCode_ReturnsTrue()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.001"/>
+  <testcase name="verifySmsCode_ValidCode_ReturnsTrue()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.001"/>
+  <testcase name="verifyEmailCode_ValidCode_ReturnsTrue()" classname="com.ahamo.auth.service.MfaServiceTest" time="0.002"/>
+  <system-out><![CDATA[2025-06-13 06:26:17 [Test worker] WARN  com.ahamo.auth.service.MfaService - Email configuration not set, skipping email send
+2025-06-13 06:26:17 [Test worker] INFO  com.ahamo.auth.service.MfaService - Email verification code sent to: test@example.com
+2025-06-13 06:26:17 [Test worker] WARN  com.ahamo.auth.service.MfaService - Twilio configuration not set, skipping SMS send
+2025-06-13 06:26:17 [Test worker] INFO  com.ahamo.auth.service.MfaService - SMS verification code sent to: 090-1234-5678
+2025-06-13 06:26:17 [Test worker] WARN  com.ahamo.auth.service.MfaService - Email configuration not set, skipping email send
+2025-06-13 06:26:17 [Test worker] INFO  com.ahamo.auth.service.MfaService - Email verification code sent to: test@example.com
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ahamo.plan.service.PlanServiceTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2025-06-13T06:26:36" hostname="devin-box" time="0.032">
+  <properties/>
+  <testcase name="deactivatePlan_NonExistentPlan_ThrowsException()" classname="com.ahamo.plan.service.PlanServiceTest" time="0.02"/>
+  <testcase name="updatePlan_ExistingPlan_ReturnsUpdatedPlan()" classname="com.ahamo.plan.service.PlanServiceTest" time="0.005"/>
+  <testcase name="createPlan_ValidRequest_ReturnsCreatedPlan()" classname="com.ahamo.plan.service.PlanServiceTest" time="0.001"/>
+  <testcase name="getPlanVersionHistory_ExistingPlan_ReturnsVersionHistory()" classname="com.ahamo.plan.service.PlanServiceTest" time="0.001"/>
+  <testcase name="updatePlan_NonExistentPlan_ThrowsException()" classname="com.ahamo.plan.service.PlanServiceTest" time="0.001"/>
+  <testcase name="deactivatePlan_ExistingPlan_DeactivatesSuccessfully()" classname="com.ahamo.plan.service.PlanServiceTest" time="0.001"/>
+  <testcase name="getPlanVersionHistory_NonExistentPlan_ReturnsEmptyList()" classname="com.ahamo.plan.service.PlanServiceTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

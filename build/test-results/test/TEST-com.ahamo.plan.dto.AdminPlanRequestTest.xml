@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ahamo.plan.dto.AdminPlanRequestTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2025-06-13T06:26:36" hostname="devin-box" time="0.236">
+  <properties/>
+  <testcase name="testNullName_ShouldFailValidation()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.167"/>
+  <testcase name="testBlankDataCapacity_ShouldFailValidation()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.008"/>
+  <testcase name="testCampaignPeriodFields()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.006"/>
+  <testcase name="testBlankVoiceCalls_ShouldFailValidation()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.006"/>
+  <testcase name="testLombokGeneratedMethods()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.011"/>
+  <testcase name="testBlankName_ShouldFailValidation()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.005"/>
+  <testcase name="testBlankChangeReason_ShouldFailValidation()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.005"/>
+  <testcase name="testNegativeMonthlyFee_ShouldFailValidation()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.005"/>
+  <testcase name="testAllArgsConstructor()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.005"/>
+  <testcase name="testEffectivePeriodFields()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.005"/>
+  <testcase name="testNullMonthlyFee_ShouldFailValidation()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.004"/>
+  <testcase name="testValidRequest()" classname="com.ahamo.plan.dto.AdminPlanRequestTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

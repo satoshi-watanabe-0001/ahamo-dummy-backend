@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ahamo.user.service.UserServiceTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2025-06-13T06:26:37" hostname="devin-box" time="0.041">
+  <properties/>
+  <testcase name="findByEmail_ExistingUser_ReturnsUser()" classname="com.ahamo.user.service.UserServiceTest" time="0.024"/>
+  <testcase name="isAccountLocked_UnlockedAccount_ReturnsFalse()" classname="com.ahamo.user.service.UserServiceTest" time="0.0"/>
+  <testcase name="validatePassword_IncorrectPassword_ReturnsFalse()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="validateContractCredentials_ValidCredentials_ReturnsTrue()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="findByContractNumber_ExistingUser_ReturnsUser()" classname="com.ahamo.user.service.UserServiceTest" time="0.002"/>
+  <testcase name="createUser_ValidUser_ReturnsCreatedUser()" classname="com.ahamo.user.service.UserServiceTest" time="0.002"/>
+  <testcase name="validateContractCredentials_InvalidBirthDate_ReturnsFalse()" classname="com.ahamo.user.service.UserServiceTest" time="0.0"/>
+  <testcase name="validateContractCredentials_InvalidContractNumber_ReturnsFalse()" classname="com.ahamo.user.service.UserServiceTest" time="0.0"/>
+  <testcase name="findByEmail_NonExistingUser_ReturnsEmpty()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="incrementFailedLoginAttempts_UpdatesAttempts()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="existsByEmail_ExistingEmail_ReturnsTrue()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="isAccountLocked_LockedAccount_ReturnsTrue()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="updateUser_ValidUser_ReturnsUpdatedUser()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="resetFailedLoginAttempts_ResetsToZero()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="validatePassword_CorrectPassword_ReturnsTrue()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <testcase name="existsByPhoneNumber_ExistingPhone_ReturnsTrue()" classname="com.ahamo.user.service.UserServiceTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

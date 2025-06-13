@@ -1,0 +1,170 @@
+server:
+  port: 3000
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql,classpath:data-inventory.sql,classpath:data-mnp.sql
+  
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+  
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: ${JWT_SECRET:mySecretKey123456789012345678901234567890}
+  access-token-expiration: 3600000
+  refresh-token-expiration: 86400000
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  phone-number: ${TWILIO_PHONE_NUMBER:}
+
+security:
+  rate-limit:
+    login-attempts: 5
+    time-window: 300000
+  session:
+    timeout: 86400000
+  encryption:
+    key: myDefaultEncryptionKey123456789012
+
+logging:
+  level:
+    com.ahamo: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/ahamo-backend.log
+    max-size: 100MB
+    max-history: 30
+
+# Monitoring and metrics configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+      sla:
+        http.server.requests: 100ms, 500ms, 1s
+
+# ELK Stack configuration
+elasticsearch:
+  host: localhost
+  port: 9200
+  username: ${ELASTICSEARCH_USERNAME:}
+  password: ${ELASTICSEARCH_PASSWORD:}
+  index-prefix: ahamo-backend
+  
+logstash:
+  host: localhost
+  port: 5000
+  enabled: true
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule:
+    full-backup: "0 0 2 * * ?"
+    incremental-backup: "0 0 */6 * * ?"
+  retention:
+    days: 30
+  storage:
+    path: /var/backups/ahamo
+    max-size: 10GB
+
+# Alert configuration
+alerts:
+  enabled: true
+  notification:
+    email:
+      enabled: true
+      recipients: ${ALERT_EMAIL_RECIPIENTS:admin@ahamo.com}
+    sms:
+      enabled: false
+  thresholds:
+    memory-usage: 90
+    disk-usage: 85
+    response-time: 5000
+    error-rate: 5
+
+mnp:
+  carriers:
+    docomo:
+      endpoint: "https://api.docomo.ne.jp/mnp"
+      timeout: 30
+      retry-attempts: 3
+    au:
+      endpoint: "https://api.au.com/mnp"
+      timeout: 30
+      retry-attempts: 3
+    softbank:
+      endpoint: "https://api.softbank.jp/mnp"
+      timeout: 30
+      retry-attempts: 3
+  processing:
+    batch-size: 50
+    retry-delay: 300000
