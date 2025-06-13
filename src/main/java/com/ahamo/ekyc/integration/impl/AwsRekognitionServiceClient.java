@@ -103,7 +103,7 @@ public class AwsRekognitionServiceClient implements ExternalAiServiceClient {
     @Override
     public boolean isServiceAvailable() {
         try {
-            return serviceEnabled && authenticateService();
+            return serviceEnabled && authenticateServiceInternal();
         } catch (Exception e) {
             log.error("AWS Rekognitionサービス可用性チェックエラー", e);
             return false;
@@ -127,7 +127,7 @@ public class AwsRekognitionServiceClient implements ExternalAiServiceClient {
         return confidenceThreshold.doubleValue();
     }
 
-    private boolean authenticateService() {
+    private boolean authenticateServiceInternal() {
         return true;
     }
 

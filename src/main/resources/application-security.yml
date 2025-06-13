@@ -1,0 +1,22 @@
+spring:
+  security:
+    headers:
+      frame-options: DENY
+      content-type-options: nosniff
+      xss-protection: 1; mode=block
+      referrer-policy: strict-origin-when-cross-origin
+      
+logging:
+  level:
+    com.ahamo.payment.security: INFO
+    com.ahamo.payment.validation: INFO
+    org.springframework.security: WARN
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized

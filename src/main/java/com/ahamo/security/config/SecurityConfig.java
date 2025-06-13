@@ -42,18 +42,27 @@ public class SecurityConfig {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                .headers(headers -> headers
+                    .frameOptions().deny()
+                    .contentTypeOptions().and()
+                    .httpStrictTransportSecurity(hstsConfig -> hstsConfig
+                        .maxAgeInSeconds(31536000)
+                        .includeSubDomains(true)))
                 .authorizeHttpRequests(authz -> authz
                         .antMatchers("/v1/auth/login", "/v1/auth/register", "/v1/auth/verify", 
                                    "/v1/auth/login/contract", "/v1/plans/**", "/v1/devices/**", 
                                    "/v1/options/**", "/v1/mnp/eligibility", "/v1/payments/methods",
                                    "/api/v1/plans/**", "/h2-console/**", "/actuator/**").permitAll()
+                        .antMatchers("/api/payments/tokenize", "/api/payments/validate-token", 
+                                   "/api/payments/banks/**", "/api/payments/methods/**",
+                                   "/api/payments/validate-bank-account", "/api/payments/process").permitAll()
+                        .antMatchers("/api/payments/secure/**").hasRole("PAYMENT_PROCESSOR")
                         .antMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .antMatchers("/v1/payments/**").authenticated()
                         .anyRequest().authenticated()
                 );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        http.headers().frameOptions().disable();
 
         return http.build();
     }

@@ -11,6 +11,8 @@ import com.ahamo.payment.model.Payment;
 import com.ahamo.payment.model.PaymentHistory;
 import com.ahamo.payment.repository.PaymentRepository;
 import com.ahamo.payment.repository.PaymentHistoryRepository;
+import com.ahamo.payment.security.TokenizationService;
+import com.ahamo.payment.validation.PaymentValidator;
 import com.ahamo.pricing.service.PricingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +29,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentServiceImpl implements PaymentService {
-    
+
     private final PaymentRepository paymentRepository;
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final PaymentGatewayFactory gatewayFactory;
+    private final TokenizationService tokenizationService;
+    private final PaymentValidator paymentValidator;
     private final PricingService pricingService;
     
     @Override
@@ -38,9 +42,14 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponseDto processPayment(PaymentRequestDto request) {
         log.info("Processing payment for contract: {}", request.getContractId());
         
-        Payment payment = createPaymentRecord(request);
-        
         try {
+            String paymentToken = (String) request.getPaymentDetails().get("paymentToken");
+            if (paymentToken != null && !tokenizationService.validateToken(paymentToken)) {
+                throw new IllegalArgumentException("Invalid or expired payment token");
+            }
+            
+            Payment payment = createPaymentRecord(request);
+            
             PaymentGatewayAdapter gateway = gatewayFactory.getAdapter("default");
             
             GatewayRequest gatewayRequest = GatewayRequest.builder()
@@ -48,6 +57,8 @@ public class PaymentServiceImpl implements PaymentService {
                     .amount(payment.getAmount())
                     .currency("JPY")
                     .paymentMethodId(request.getPaymentMethodId())
+                    .customerToken(request.getContractId())
+                    .metadata(request.getPaymentDetails())
                     .build();
             
             GatewayResponse response = gateway.processPayment(gatewayRequest);
@@ -56,6 +67,10 @@ public class PaymentServiceImpl implements PaymentService {
             paymentRepository.save(payment);
             
             createPaymentHistory(payment);
+            
+            if (paymentToken != null) {
+                tokenizationService.revokeToken(paymentToken);
+            }
             
             return PaymentResponseDto.builder()
                     .paymentId(payment.getPaymentUuid())
@@ -66,10 +81,6 @@ public class PaymentServiceImpl implements PaymentService {
                     
         } catch (Exception e) {
             log.error("Payment processing failed for contract: {}", request.getContractId(), e);
-            payment.setStatus(Payment.PaymentStatus.FAILED);
-            payment.setFailureReason(e.getMessage());
-            paymentRepository.save(payment);
-            
             throw new RuntimeException("Payment processing failed: " + e.getMessage());
         }
     }
@@ -78,25 +89,25 @@ public class PaymentServiceImpl implements PaymentService {
     public List<PaymentMethodDto> getAvailablePaymentMethods() {
         return Arrays.asList(
             PaymentMethodDto.builder()
-                .id("credit_card")
+                .id("credit")
                 .name("クレジットカード")
-                .type("credit_card")
+                .type("credit")
                 .isAvailable(true)
                 .additionalFees(BigDecimal.ZERO)
                 .build(),
             PaymentMethodDto.builder()
-                .id("convenience_store")
-                .name("コンビニ決済")
-                .type("convenience_store")
+                .id("bank")
+                .name("銀行口座振替")
+                .type("bank")
                 .isAvailable(true)
-                .additionalFees(new BigDecimal("110"))
+                .additionalFees(BigDecimal.ZERO)
                 .build(),
             PaymentMethodDto.builder()
-                .id("bank_transfer")
-                .name("銀行振込")
-                .type("bank_transfer")
+                .id("convenience")
+                .name("コンビニ払い")
+                .type("convenience")
                 .isAvailable(true)
-                .additionalFees(new BigDecimal("220"))
+                .additionalFees(new BigDecimal("110"))
                 .build()
         );
     }
