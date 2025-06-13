@@ -78,6 +78,78 @@ logging:
   level:
     com.ahamo: DEBUG
     org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/ahamo-backend.log
+    max-size: 100MB
+    max-history: 30
+
+# Monitoring and metrics configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+      sla:
+        http.server.requests: 100ms, 500ms, 1s
+
+# ELK Stack configuration
+elasticsearch:
+  host: localhost
+  port: 9200
+  username: ${ELASTICSEARCH_USERNAME:}
+  password: ${ELASTICSEARCH_PASSWORD:}
+  index-prefix: ahamo-backend
+  
+logstash:
+  host: localhost
+  port: 5000
+  enabled: true
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule:
+    full-backup: "0 0 2 * * ?"
+    incremental-backup: "0 0 */6 * * ?"
+  retention:
+    days: 30
+  storage:
+    path: /var/backups/ahamo
+    max-size: 10GB
+
+# Alert configuration
+alerts:
+  enabled: true
+  notification:
+    email:
+      enabled: true
+      recipients: ${ALERT_EMAIL_RECIPIENTS:admin@ahamo.com}
+    sms:
+      enabled: false
+  thresholds:
+    memory-usage: 90
+    disk-usage: 85
+    response-time: 5000
+    error-rate: 5
 
 mnp:
   carriers:

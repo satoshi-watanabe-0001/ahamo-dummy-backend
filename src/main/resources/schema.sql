@@ -116,7 +116,6 @@ CREATE TABLE IF NOT EXISTS customer_history (
     ip_address VARCHAR(45),
     FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
-<<<<<<< HEAD
 
 CREATE TABLE IF NOT EXISTS plans (
     id VARCHAR(255) PRIMARY KEY,
@@ -146,8 +145,6 @@ CREATE TABLE IF NOT EXISTS plan_features (
     feature VARCHAR(255) NOT NULL,
     FOREIGN KEY (plan_id) REFERENCES plans(id)
 );
-||||||| parent of 7abdf50 (SCRUM-46: 在庫管理システム実装)
-=======
 
 CREATE TABLE IF NOT EXISTS inventory (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -181,6 +178,39 @@ CREATE INDEX idx_inventory_status ON inventory(available_stock, alert_threshold)
 CREATE INDEX idx_reservation_expiry ON reservations(expires_at, status);
 CREATE INDEX idx_reservation_status ON reservations(status);
 CREATE INDEX idx_inventory_updated ON inventory(updated_at);
+
+CREATE TABLE IF NOT EXISTS alerts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    alert_type VARCHAR(100) NOT NULL,
+    severity VARCHAR(20) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    source VARCHAR(100),
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    acknowledged_at TIMESTAMP NULL,
+    resolved_at TIMESTAMP NULL,
+    INDEX idx_alert_type (alert_type),
+    INDEX idx_severity (severity),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at)
+);
+
+CREATE TABLE IF NOT EXISTS backup_records (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    backup_id VARCHAR(100) NOT NULL UNIQUE,
+    backup_type VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NULL,
+    size BIGINT NULL,
+    file_path VARCHAR(500),
+    error_message TEXT,
+    INDEX idx_backup_id (backup_id),
+    INDEX idx_backup_type (backup_type),
+    INDEX idx_status (status),
+    INDEX idx_start_time (start_time)
+);
 
 CREATE TABLE IF NOT EXISTS mnp_requests (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -234,4 +264,3 @@ CREATE INDEX idx_mnp_requests_carrier ON mnp_requests(current_carrier);
 CREATE INDEX idx_mnp_requests_created ON mnp_requests(created_at);
 CREATE INDEX idx_mnp_status_history_request ON mnp_status_history(mnp_request_id);
 CREATE INDEX idx_carrier_info_code ON carrier_info(carrier_code);
->>>>>>> 7abdf50 (SCRUM-46: 在庫管理システム実装)
