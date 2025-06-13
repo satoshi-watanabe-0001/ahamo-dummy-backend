@@ -1,0 +1,27 @@
+payment:
+  tokenization:
+    ttl: 3600
+    key: ahamo_contract_form_key_2024
+  gateway:
+    default: mock
+    timeout: 30000
+  validation:
+    enabled: true
+    strict-mode: false
+
+bank:
+  api:
+    enabled: false
+    url: https://api.bank-service.example.com
+    timeout: 10000
+
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
