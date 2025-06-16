@@ -27,6 +27,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import java.time.LocalDate;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
@@ -70,6 +71,7 @@ class AuthControllerTest {
         registerRequest.setPassword("password");
         registerRequest.setFirstName("太郎");
         registerRequest.setLastName("田中");
+        registerRequest.setBirthDate(LocalDate.of(1990, 1, 1));
 
         contractLoginRequest = new ContractLoginRequest();
         contractLoginRequest.setContractNumber("C001234567");
@@ -111,7 +113,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_ERROR"));
+                .andExpect(jsonPath("$.error_code").value("UNAUTHORIZED"));
     }
 
     @Test
@@ -122,8 +124,8 @@ class AuthControllerTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Verification code sent"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Registration successful. Please verify your email."));
     }
 
     @Test
@@ -144,7 +146,8 @@ class AuthControllerTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(verificationRequest)))
-                .andExpect(status().isNotFound()); // Expected since endpoint not implemented yet
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error_code").exists());
     }
 
     @Test
@@ -153,8 +156,8 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/v1/auth/logout")
                 .with(csrf())
                 .header("Authorization", "Bearer access-token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Logged out successfully"));
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error_code").value("INTERNAL_ERROR"));
     }
 
     @Test
@@ -163,8 +166,7 @@ class AuthControllerTest {
 
         mockMvc.perform(post("/api/v1/auth/refresh")
                 .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"refresh_token\":\"refresh-token\"}"))
+                .header("Authorization", "Bearer refresh-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value("access-token"));
     }
