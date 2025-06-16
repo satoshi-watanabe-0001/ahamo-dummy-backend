@@ -40,9 +40,7 @@ class TokenizationServiceImplTest {
         ReflectionTestUtils.setField(tokenizationService, "objectMapper", objectMapper);
         ReflectionTestUtils.setField(tokenizationService, "auditService", mockAuditService);
         ReflectionTestUtils.setField(tokenizationService, "tokenTtl", 3600L);
-        ReflectionTestUtils.setField(tokenizationService, "encryptionKey", "ahamo_contract_form_key_2024");
-        
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        ReflectionTestUtils.setField(tokenizationService, "encryptionKey", "ahamo_contract_form_key_2024_32b");
     }
 
     @Test
@@ -54,6 +52,7 @@ class TokenizationServiceImplTest {
             .cvv("123")
             .cardHolderName("TARO YAMADA")
             .build();
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         TokenizationResult result = tokenizationService.tokenizeCard(cardDetails);
 

@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.HashOperations;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +28,9 @@ class SecurityAuditServiceTest {
     private ValueOperations<String, String> valueOperations;
 
     @Mock
+    private HashOperations<String, Object, Object> hashOperations;
+
+    @Mock
     private HttpServletRequest request;
 
     @InjectMocks
@@ -34,13 +38,12 @@ class SecurityAuditServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(redisTemplate.opsForHash()).thenReturn(mock(org.springframework.data.redis.core.HashOperations.class));
     }
 
     @Test
     void checkRateLimit_FirstAttempt_ReturnsTrue() {
         String ipAddress = "192.168.1.1";
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("login_attempts:" + ipAddress)).thenReturn(null);
 
         boolean result = securityAuditService.checkRateLimit(ipAddress);
@@ -52,28 +55,29 @@ class SecurityAuditServiceTest {
     @Test
     void isIpBlocked_BlockedIp_ReturnsTrue() {
         String ipAddress = "192.168.1.1";
-        when(valueOperations.get("blocked_ip:" + ipAddress)).thenReturn("blocked");
+        when(redisTemplate.hasKey("ip_blacklist:" + ipAddress)).thenReturn(true);
 
         boolean result = securityAuditService.isIpBlocked(ipAddress);
 
         assertTrue(result);
-        verify(valueOperations).get("blocked_ip:" + ipAddress);
+        verify(redisTemplate).hasKey("ip_blacklist:" + ipAddress);
     }
 
     @Test
     void isIpBlocked_NonBlockedIp_ReturnsFalse() {
         String ipAddress = "192.168.1.1";
-        when(valueOperations.get("blocked_ip:" + ipAddress)).thenReturn(null);
+        when(redisTemplate.hasKey("ip_blacklist:" + ipAddress)).thenReturn(false);
 
         boolean result = securityAuditService.isIpBlocked(ipAddress);
 
         assertFalse(result);
-        verify(valueOperations).get("blocked_ip:" + ipAddress);
+        verify(redisTemplate).hasKey("ip_blacklist:" + ipAddress);
     }
 
     @Test
     void blockIpAddress_ValidIp_BlocksIp() {
         String ipAddress = "192.168.1.1";
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         securityAuditService.blockIpAddress(ipAddress);
 
@@ -94,30 +98,36 @@ class SecurityAuditServiceTest {
         String eventType = "SUSPICIOUS_LOGIN";
         String ipAddress = "192.168.1.1";
         String details = "Multiple failed attempts";
+        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
 
         securityAuditService.logSecurityEvent(eventType, ipAddress, details);
 
         verify(redisTemplate).opsForHash();
+        verify(hashOperations).putAll(anyString(), anyMap());
     }
 
     @Test
     void logFailedLogin_ValidData_LogsEvent() {
         String email = "test@example.com";
         String ipAddress = "192.168.1.1";
+        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
 
         securityAuditService.logFailedLogin(email, ipAddress);
 
         verify(redisTemplate).opsForHash();
+        verify(hashOperations).putAll(anyString(), anyMap());
     }
 
     @Test
     void logSuccessfulLogin_ValidData_LogsEventAndResetsRateLimit() {
         String email = "test@example.com";
         String ipAddress = "192.168.1.1";
+        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
 
         securityAuditService.logSuccessfulLogin(email, ipAddress);
 
         verify(redisTemplate).opsForHash();
+        verify(hashOperations).putAll(anyString(), anyMap());
         verify(redisTemplate).delete("login_attempts:" + ipAddress);
     }
 

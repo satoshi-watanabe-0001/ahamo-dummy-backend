@@ -34,8 +34,6 @@ class SessionServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        
         testSessionData = new HashMap<>();
         testSessionData.put("token", "test-token");
         testSessionData.put("created_at", System.currentTimeMillis());
@@ -46,6 +44,7 @@ class SessionServiceTest {
     void createSession_ValidData_CreatesSession() {
         String userId = "1";
         String token = "test-token";
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         sessionService.createSession(userId, token);
 
@@ -55,6 +54,7 @@ class SessionServiceTest {
     @Test
     void isSessionValid_ValidSession_ReturnsTrue() {
         String userId = "1";
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("session:" + userId)).thenReturn(testSessionData);
 
         boolean result = sessionService.isSessionValid(userId);
@@ -66,6 +66,7 @@ class SessionServiceTest {
     @Test
     void isSessionValid_InvalidSession_ReturnsFalse() {
         String userId = "999";
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("session:" + userId)).thenReturn(null);
 
         boolean result = sessionService.isSessionValid(userId);
@@ -88,6 +89,7 @@ class SessionServiceTest {
         String userId = "1";
         Map<String, Object> contractData = new HashMap<>();
         contractData.put("contractNumber", "C001234567");
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         sessionService.storeContractData(userId, contractData);
 
@@ -97,6 +99,7 @@ class SessionServiceTest {
     @Test
     void getContractData_ExistingData_ReturnsData() {
         String userId = "1";
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("contract_data:" + userId)).thenReturn(testSessionData);
 
         Map<String, Object> result = sessionService.getContractData(userId);
@@ -108,6 +111,7 @@ class SessionServiceTest {
     @Test
     void getContractData_NoData_ReturnsNull() {
         String userId = "999";
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("contract_data:" + userId)).thenReturn(null);
 
         Map<String, Object> result = sessionService.getContractData(userId);

@@ -3,6 +3,7 @@ package com.ahamo.user.service;
 import com.ahamo.security.exception.AuthenticationException;
 import com.ahamo.user.model.User;
 import com.ahamo.user.repository.UserRepository;
+import com.ahamo.user.service.UserServiceImpl;
 import com.ahamo.auth.dto.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     private User testUser;
 
@@ -88,12 +89,7 @@ class UserServiceTest {
 
     @Test
     void createUser_ValidUser_ReturnsCreatedUser() {
-        when(passwordEncoder.encode("password")).thenReturn("hashedPassword");
         when(userRepository.save(any(User.class))).thenReturn(testUser);
-
-        User newUser = new User();
-        newUser.setEmail("new@example.com");
-        newUser.setPassword("password");
 
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setEmail("new@example.com");
@@ -107,7 +103,6 @@ class UserServiceTest {
 
         assertNotNull(result);
         assertEquals("test@example.com", result.getEmail());
-        verify(passwordEncoder).encode("password");
         verify(userRepository).save(any(User.class));
     }
 

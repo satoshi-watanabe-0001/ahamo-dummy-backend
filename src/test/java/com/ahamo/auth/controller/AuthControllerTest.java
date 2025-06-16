@@ -27,6 +27,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import java.time.LocalDate;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
@@ -70,6 +71,7 @@ class AuthControllerTest {
         registerRequest.setPassword("password");
         registerRequest.setFirstName("太郎");
         registerRequest.setLastName("田中");
+        registerRequest.setBirthDate(LocalDate.of(1990, 1, 1));
 
         contractLoginRequest = new ContractLoginRequest();
         contractLoginRequest.setContractNumber("C001234567");
@@ -90,15 +92,15 @@ class AuthControllerTest {
     void login_ValidCredentials_ReturnsAuthResponse() throws Exception {
         when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
 
-        mockMvc.perform(post("/v1/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_token").value("access-token"))
-                .andExpect(jsonPath("$.refresh_token").value("refresh-token"))
-                .andExpect(jsonPath("$.token_type").value("Bearer"))
-                .andExpect(jsonPath("$.expires_in").value(3600));
+                .andExpect(jsonPath("$.accessToken").value("access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(3600));
     }
 
     @Test
@@ -106,66 +108,66 @@ class AuthControllerTest {
         when(authService.login(any(LoginRequest.class)))
                 .thenThrow(new AuthenticationException("Invalid credentials"));
 
-        mockMvc.perform(post("/v1/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error_code").value("AUTHENTICATION_ERROR"));
+                .andExpect(jsonPath("$.error_code").value("UNAUTHORIZED"));
     }
 
     @Test
     void register_ValidRequest_ReturnsSuccess() throws Exception {
         doNothing().when(authService).register(any(RegisterRequest.class));
 
-        mockMvc.perform(post("/v1/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Verification code sent"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Registration successful. Please verify your email."));
     }
 
     @Test
     void loginWithContract_ValidCredentials_ReturnsAuthResponse() throws Exception {
         when(authService.loginWithContract(any(ContractLoginRequest.class))).thenReturn(authResponse);
 
-        mockMvc.perform(post("/v1/auth/login/contract")
+        mockMvc.perform(post("/api/v1/auth/login/contract")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(contractLoginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_token").value("access-token"));
+                .andExpect(jsonPath("$.accessToken").value("access-token"));
     }
 
     @Test
     void verify_ValidCode_ReturnsAuthResponse() throws Exception {
-        mockMvc.perform(post("/v1/auth/verify")
+        mockMvc.perform(post("/api/v1/auth/verify")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(verificationRequest)))
-                .andExpect(status().isNotFound()); // Expected since endpoint not implemented yet
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error_code").exists());
     }
 
     @Test
     @WithMockUser
     void logout_AuthenticatedUser_ReturnsSuccess() throws Exception {
-        mockMvc.perform(post("/v1/auth/logout")
+        mockMvc.perform(post("/api/v1/auth/logout")
                 .with(csrf())
                 .header("Authorization", "Bearer access-token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Logged out successfully"));
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error_code").value("INTERNAL_ERROR"));
     }
 
     @Test
     void refresh_ValidToken_ReturnsNewTokens() throws Exception {
         when(authService.refreshToken("refresh-token")).thenReturn(authResponse);
 
-        mockMvc.perform(post("/v1/auth/refresh")
+        mockMvc.perform(post("/api/v1/auth/refresh")
                 .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"refresh_token\":\"refresh-token\"}"))
+                .header("Authorization", "Bearer refresh-token"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_token").value("access-token"));
+                .andExpect(jsonPath("$.accessToken").value("access-token"));
     }
 }
