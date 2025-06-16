@@ -71,10 +71,13 @@ https://api.online-contract.example.com/v1
 
 ## 📚 ドキュメント
 
-- **[API仕様概要](./api-specs/README.md)**: API全体の概要と機能
-- **[OpenAPI仕様書](./api-specs/openapi/core-api.yaml)**: 完全なAPI仕様
-- **[命名規則ガイドライン](./api-specs/API-naming-conventions.md)**: 実装時の命名規則
-- **[共通JSON Schema](./api-specs/openapi/schemas/common.json)**: データ形式定義
+### 📖 詳細ドキュメント
+- **[統合ドキュメント](https://github.com/satoshi-watanabe-0001/ahamo-dummy-document)**: プロジェクト全体の包括的ドキュメント
+  - 進捗レポート、API仕様、実装ガイドなど
+
+### 🔧 技術仕様（移行済み）
+- API仕様、命名規則、OpenAPI仕様書は統合ドキュメントリポジトリに移動しました
+- 最新の技術ドキュメントは上記の統合ドキュメントリポジトリをご参照ください
 
 ## 🤝 開発チーム
 
