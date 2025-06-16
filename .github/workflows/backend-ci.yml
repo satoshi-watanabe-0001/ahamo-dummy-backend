@@ -68,13 +68,13 @@ jobs:
       if: always()
       with:
         name: test-results
-        path: target/surefire-reports/
+        path: build/reports/tests/
         
     - name: Upload coverage reports
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
-        path: target/site/jacoco/
+        path: build/reports/jacoco/
         
   code-quality:
     name: コード品質チェック
@@ -135,4 +135,4 @@ jobs:
       if: always()
       with:
         name: security-report
-        path: target/dependency-check-report.html
+        path: build/reports/dependency-check-report.html
