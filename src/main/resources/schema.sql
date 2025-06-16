@@ -266,3 +266,41 @@ CREATE INDEX idx_mnp_requests_carrier ON mnp_requests(current_carrier);
 CREATE INDEX idx_mnp_requests_created ON mnp_requests(created_at);
 CREATE INDEX idx_mnp_status_history_request ON mnp_status_history(mnp_request_id);
 CREATE INDEX idx_carrier_info_code ON carrier_info(carrier_code);
+
+CREATE TABLE IF NOT EXISTS contract_change_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    contract_uuid VARCHAR(255) NOT NULL,
+    change_type VARCHAR(50) NOT NULL CHECK (change_type IN ('PLAN_CHANGE', 'OPTION_ADD', 'OPTION_REMOVE', 'OPTION_SUSPEND')),
+    old_value TEXT,
+    new_value TEXT,
+    reason VARCHAR(500),
+    effective_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS contracts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    contract_uuid VARCHAR(255) UNIQUE NOT NULL,
+    plan_id VARCHAR(255) NOT NULL,
+    device_id VARCHAR(255),
+    device_color VARCHAR(50),
+    device_storage VARCHAR(50),
+    customer_first_name VARCHAR(100),
+    customer_last_name VARCHAR(100),
+    customer_email VARCHAR(255),
+    customer_phone VARCHAR(20),
+    status VARCHAR(50) NOT NULL,
+    signature_status VARCHAR(50),
+    confirmation_number VARCHAR(50),
+    total_amount DECIMAL(10,2),
+    options TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_contract_change_history_contract ON contract_change_history(contract_uuid);
+CREATE INDEX idx_contract_change_history_type ON contract_change_history(change_type);
+CREATE INDEX idx_contracts_uuid ON contracts(contract_uuid);
+CREATE INDEX idx_contracts_status ON contracts(status);
+CREATE INDEX idx_contracts_customer_email ON contracts(customer_email);
