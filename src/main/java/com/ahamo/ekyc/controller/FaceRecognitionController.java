@@ -17,7 +17,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
 @RestController
-@RequestMapping("/v1/ekyc/session")
+@RequestMapping("/api/v1/ekyc/session")
 @RequiredArgsConstructor
 @Validated
 @Slf4j

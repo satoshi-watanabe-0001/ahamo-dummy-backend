@@ -34,8 +34,11 @@ class TokenizationServiceImplTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         PaymentAuditService mockAuditService = Mockito.mock(PaymentAuditService.class);
-        tokenizationService = new TokenizationServiceImpl(redisTemplate, objectMapper, mockAuditService);
+        tokenizationService = new TokenizationServiceImpl();
         
+        ReflectionTestUtils.setField(tokenizationService, "redisTemplate", redisTemplate);
+        ReflectionTestUtils.setField(tokenizationService, "objectMapper", objectMapper);
+        ReflectionTestUtils.setField(tokenizationService, "auditService", mockAuditService);
         ReflectionTestUtils.setField(tokenizationService, "tokenTtl", 3600L);
         ReflectionTestUtils.setField(tokenizationService, "encryptionKey", "ahamo_contract_form_key_2024");
         

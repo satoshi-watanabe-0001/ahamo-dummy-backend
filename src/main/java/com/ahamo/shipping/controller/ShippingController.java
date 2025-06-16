@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/shipping")
+@RequestMapping("/api/v1/shipping")
 @RequiredArgsConstructor
 @Slf4j
 public class ShippingController {
