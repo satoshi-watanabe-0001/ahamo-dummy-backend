@@ -33,6 +33,15 @@ public class TrackingEvent {
     @Column(name = "location")
     private String location;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "estimated_arrival_time")
+    private LocalDateTime estimatedArrivalTime;
+
     @NotNull
     @Column(name = "timestamp")
     private LocalDateTime timestamp;

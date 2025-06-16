@@ -3,9 +3,10 @@ package com.ahamo.payment.security;
 import com.ahamo.payment.gateway.dto.CardDetails;
 import com.ahamo.payment.gateway.dto.TokenizationResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.ahamo.payment.audit.PaymentAuditService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,17 @@ import java.util.regex.Pattern;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class TokenizationServiceImpl implements TokenizationService {
     
-    private final RedisTemplate<String, String> redisTemplate;
-    private final ObjectMapper objectMapper;
-    private final PaymentAuditService auditService;
+    @Autowired
+    @Qualifier("paymentRedisTemplate")
+    private RedisTemplate<String, String> redisTemplate;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
+    
+    @Autowired
+    private PaymentAuditService auditService;
     
     @Value("${payment.tokenization.ttl:3600}")
     private long tokenTtl;

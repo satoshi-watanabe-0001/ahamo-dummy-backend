@@ -189,12 +189,13 @@ CREATE TABLE IF NOT EXISTS alerts (
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     acknowledged_at TIMESTAMP NULL,
-    resolved_at TIMESTAMP NULL,
-    INDEX idx_alert_type (alert_type),
-    INDEX idx_severity (severity),
-    INDEX idx_status (status),
-    INDEX idx_created_at (created_at)
+    resolved_at TIMESTAMP NULL
 );
+
+CREATE INDEX idx_alert_type ON alerts(alert_type);
+CREATE INDEX idx_severity ON alerts(severity);
+CREATE INDEX idx_status ON alerts(status);
+CREATE INDEX idx_created_at ON alerts(created_at);
 
 CREATE TABLE IF NOT EXISTS backup_records (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -205,12 +206,13 @@ CREATE TABLE IF NOT EXISTS backup_records (
     end_time TIMESTAMP NULL,
     size BIGINT NULL,
     file_path VARCHAR(500),
-    error_message TEXT,
-    INDEX idx_backup_id (backup_id),
-    INDEX idx_backup_type (backup_type),
-    INDEX idx_status (status),
-    INDEX idx_start_time (start_time)
+    error_message TEXT
 );
+
+CREATE INDEX idx_backup_id ON backup_records(backup_id);
+CREATE INDEX idx_backup_type ON backup_records(backup_type);
+CREATE INDEX idx_backup_status ON backup_records(status);
+CREATE INDEX idx_start_time ON backup_records(start_time);
 
 CREATE TABLE IF NOT EXISTS mnp_requests (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

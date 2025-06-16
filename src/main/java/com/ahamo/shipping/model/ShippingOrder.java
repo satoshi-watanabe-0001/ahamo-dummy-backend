@@ -65,6 +65,15 @@ public class ShippingOrder {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "delivery_rating")
+    private Integer deliveryRating;
+
+    @Column(name = "delivery_feedback")
+    private String deliveryFeedback;
+
+    @Column(name = "delivery_confirmed_at")
+    private LocalDateTime deliveryConfirmedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "provider_id", insertable = false, updatable = false)
     private LogisticsProvider provider;

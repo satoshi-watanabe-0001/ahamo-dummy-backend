@@ -10,8 +10,9 @@ import com.ahamo.payment.security.TokenizationService;
 import com.ahamo.payment.validation.PaymentValidator;
 import com.ahamo.payment.gateway.bank.BankApiClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,14 +26,21 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payments")
-@RequiredArgsConstructor
 @Slf4j
 public class PaymentTokenController {
     
-    private final TokenizationService tokenizationService;
-    private final PaymentValidator paymentValidator;
-    private final BankApiClient bankApiClient;
-    private final ObjectMapper objectMapper;
+    @Autowired
+    @Qualifier("tokenizationServiceImpl")
+    private TokenizationService tokenizationService;
+    
+    @Autowired
+    private PaymentValidator paymentValidator;
+    
+    @Autowired
+    private BankApiClient bankApiClient;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
     
     private static final String DECRYPTION_KEY = "ahamo_contract_form_key_2024";
     
