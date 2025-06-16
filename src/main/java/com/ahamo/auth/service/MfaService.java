@@ -4,6 +4,7 @@ import com.ahamo.user.model.User;
 import com.ahamo.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -18,13 +19,20 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class MfaService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final JavaMailSender mailSender;
     private final UserService userService;
+
+    public MfaService(@Qualifier("stringRedisTemplate") RedisTemplate<String, String> redisTemplate,
+                      JavaMailSender mailSender,
+                      UserService userService) {
+        this.redisTemplate = redisTemplate;
+        this.mailSender = mailSender;
+        this.userService = userService;
+    }
 
     @Value("${twilio.account-sid:}")
     private String twilioAccountSid;

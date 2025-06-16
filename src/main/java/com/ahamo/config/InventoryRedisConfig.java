@@ -3,6 +3,7 @@ package com.ahamo.config;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +44,7 @@ public class InventoryRedisConfig {
     }
     
     @Bean("inventoryRedisTemplate")
-    public RedisTemplate<String, Object> inventoryRedisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> inventoryRedisTemplate(@Qualifier("redisConnectionFactory") RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
@@ -54,7 +55,7 @@ public class InventoryRedisConfig {
     }
     
     @Bean("inventoryCacheManager")
-    public RedisCacheManager inventoryCacheManager(RedisConnectionFactory connectionFactory) {
+    public RedisCacheManager inventoryCacheManager(@Qualifier("redisConnectionFactory") RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10))
                 .serializeKeysWith(org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))

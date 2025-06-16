@@ -4,6 +4,8 @@ import com.ahamo.shipping.dto.ShippingRequest;
 import com.ahamo.shipping.dto.ShippingResponse;
 import com.ahamo.shipping.dto.TrackingResponse;
 
+import java.util.Map;
+
 public interface ShippingService {
     
     /**
@@ -30,4 +32,19 @@ public interface ShippingService {
      * 配送をキャンセル
      */
     boolean cancelShipment(String orderNumber);
+    
+    /**
+     * 配達日時を変更
+     */
+    boolean changeDeliveryTime(String orderNumber, Map<String, Object> request);
+    
+    /**
+     * 再配達を依頼
+     */
+    boolean requestRedelivery(String orderNumber, Map<String, Object> request);
+    
+    /**
+     * 配達を確認
+     */
+    boolean confirmDelivery(String orderNumber, Map<String, Object> request);
 }

@@ -1,7 +1,8 @@
 package com.ahamo.security.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -13,11 +14,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class SecurityAuditService {
 
-    private final RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    @Qualifier("stringRedisTemplate")
+    private RedisTemplate<String, String> redisTemplate;
 
     @Value("${security.rate-limit.login-attempts:5}")
     private int maxLoginAttempts;

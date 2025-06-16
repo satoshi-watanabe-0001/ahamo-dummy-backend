@@ -14,8 +14,9 @@ import com.ahamo.payment.repository.PaymentHistoryRepository;
 import com.ahamo.payment.security.TokenizationService;
 import com.ahamo.payment.validation.PaymentValidator;
 import com.ahamo.pricing.service.PricingService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,16 +27,27 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
-    private final PaymentRepository paymentRepository;
-    private final PaymentHistoryRepository paymentHistoryRepository;
-    private final PaymentGatewayFactory gatewayFactory;
-    private final TokenizationService tokenizationService;
-    private final PaymentValidator paymentValidator;
-    private final PricingService pricingService;
+    @Autowired
+    private PaymentRepository paymentRepository;
+    
+    @Autowired
+    private PaymentHistoryRepository paymentHistoryRepository;
+    
+    @Autowired
+    private PaymentGatewayFactory gatewayFactory;
+    
+    @Autowired
+    @Qualifier("tokenizationServiceImpl")
+    private TokenizationService tokenizationService;
+    
+    @Autowired
+    private PaymentValidator paymentValidator;
+    
+    @Autowired
+    private PricingService pricingService;
     
     @Override
     @Transactional

@@ -1,5 +1,6 @@
 package com.ahamo.payment.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +9,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-@Configuration
+@Configuration("paymentRedisConfig")
 public class RedisConfig {
 
     @Value("${spring.redis.host:localhost}")
@@ -17,13 +18,13 @@ public class RedisConfig {
     @Value("${spring.redis.port:6379}")
     private int redisPort;
 
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
+    @Bean("paymentRedisConnectionFactory")
+    public RedisConnectionFactory paymentRedisConnectionFactory() {
         return new LettuceConnectionFactory(redisHost, redisPort);
     }
 
-    @Bean
-    public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
+    @Bean("paymentRedisTemplate")
+    public RedisTemplate<String, String> paymentRedisTemplate(@Qualifier("paymentRedisConnectionFactory") RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, String> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());

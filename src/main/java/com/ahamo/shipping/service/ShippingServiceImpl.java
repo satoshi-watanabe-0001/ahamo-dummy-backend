@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -206,5 +208,99 @@ public class ShippingServiceImpl implements ShippingService {
         }
         
         return cancelled;
+    }
+
+    @Override
+    public boolean changeDeliveryTime(String orderNumber, Map<String, Object> request) {
+        Optional<ShippingOrder> orderOpt = shippingOrderRepository.findByOrderNumber(orderNumber);
+        if (orderOpt.isEmpty()) {
+            return false;
+        }
+        
+        ShippingOrder order = orderOpt.get();
+        
+        if (request.containsKey("deliveryDate")) {
+            String deliveryDate = (String) request.get("deliveryDate");
+            order.setEstimatedDeliveryDate(java.time.LocalDate.parse(deliveryDate));
+        }
+        
+        if (request.containsKey("timeWindow")) {
+            String timeWindow = (String) request.get("timeWindow");
+            order.setDeliveryTimeWindow(timeWindow);
+        }
+        
+        shippingOrderRepository.save(order);
+        return true;
+    }
+
+    @Override
+    public boolean requestRedelivery(String orderNumber, Map<String, Object> request) {
+        Optional<ShippingOrder> orderOpt = shippingOrderRepository.findByOrderNumber(orderNumber);
+        if (orderOpt.isEmpty()) {
+            return false;
+        }
+        
+        ShippingOrder order = orderOpt.get();
+        order.setStatus(ShippingOrder.ShippingStatus.PENDING);
+        
+        if (request.containsKey("deliveryDate")) {
+            String deliveryDate = (String) request.get("deliveryDate");
+            order.setEstimatedDeliveryDate(java.time.LocalDate.parse(deliveryDate));
+        }
+        
+        if (request.containsKey("timeWindow")) {
+            String timeWindow = (String) request.get("timeWindow");
+            order.setDeliveryTimeWindow(timeWindow);
+        }
+        
+        shippingOrderRepository.save(order);
+        
+        TrackingEvent event = TrackingEvent.builder()
+            .shippingOrderId(order.getId())
+            .status("REDELIVERY_REQUESTED")
+            .location("再配達依頼")
+            .timestamp(LocalDateTime.now())
+            .description("再配達が依頼されました")
+            .build();
+        
+        trackingEventRepository.save(event);
+        
+        return true;
+    }
+
+    @Override
+    public boolean confirmDelivery(String orderNumber, Map<String, Object> request) {
+        Optional<ShippingOrder> orderOpt = shippingOrderRepository.findByOrderNumber(orderNumber);
+        if (orderOpt.isEmpty()) {
+            return false;
+        }
+        
+        ShippingOrder order = orderOpt.get();
+        order.setStatus(ShippingOrder.ShippingStatus.DELIVERED);
+        order.setDeliveryConfirmedAt(LocalDateTime.now());
+        
+        if (request.containsKey("rating")) {
+            Integer rating = (Integer) request.get("rating");
+            order.setDeliveryRating(rating);
+        }
+        
+        if (request.containsKey("feedback")) {
+            String feedback = (String) request.get("feedback");
+            order.setDeliveryFeedback(feedback);
+        }
+        
+        shippingOrderRepository.save(order);
+        
+        TrackingEvent event = TrackingEvent.builder()
+            .shippingOrderId(order.getId())
+            .status("DELIVERED")
+            .location("配達完了")
+            .timestamp(LocalDateTime.now())
+            .description("配達が確認されました")
+            .build();
+        
+        trackingEventRepository.save(event);
+        
+        return true;
     }
 }

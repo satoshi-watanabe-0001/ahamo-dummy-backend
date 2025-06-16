@@ -3,6 +3,7 @@ package com.ahamo.shipping.adapter;
 import com.ahamo.shipping.dto.ShippingRequest;
 import com.ahamo.shipping.dto.ShippingResponse;
 import com.ahamo.shipping.dto.TrackingResponse;
+import com.ahamo.shipping.dto.LocationUpdate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -53,6 +54,20 @@ public class YamatoAdapter implements LogisticsProviderAdapter {
         log.info("Cancelling Yamato shipment: {}", trackingNumber);
         
         return true;
+    }
+
+    @Override
+    public LocationUpdate getLocationUpdate(String trackingNumber) {
+        log.info("Getting location update for Yamato shipment: {}", trackingNumber);
+        
+        return LocationUpdate.builder()
+                .latitude(35.6762 + Math.random() * 0.01)
+                .longitude(139.6503 + Math.random() * 0.01)
+                .currentLocation("東京都渋谷区")
+                .estimatedArrivalTime(LocalDateTime.now().plusHours(2))
+                .status("配送中")
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
     @Override
