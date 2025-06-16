@@ -90,15 +90,15 @@ class AuthControllerTest {
     void login_ValidCredentials_ReturnsAuthResponse() throws Exception {
         when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
 
-        mockMvc.perform(post("/v1/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_token").value("access-token"))
-                .andExpect(jsonPath("$.refresh_token").value("refresh-token"))
-                .andExpect(jsonPath("$.token_type").value("Bearer"))
-                .andExpect(jsonPath("$.expires_in").value(3600));
+                .andExpect(jsonPath("$.accessToken").value("access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(3600));
     }
 
     @Test
@@ -106,19 +106,19 @@ class AuthControllerTest {
         when(authService.login(any(LoginRequest.class)))
                 .thenThrow(new AuthenticationException("Invalid credentials"));
 
-        mockMvc.perform(post("/v1/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error_code").value("AUTHENTICATION_ERROR"));
+                .andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_ERROR"));
     }
 
     @Test
     void register_ValidRequest_ReturnsSuccess() throws Exception {
         doNothing().when(authService).register(any(RegisterRequest.class));
 
-        mockMvc.perform(post("/v1/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
@@ -130,17 +130,17 @@ class AuthControllerTest {
     void loginWithContract_ValidCredentials_ReturnsAuthResponse() throws Exception {
         when(authService.loginWithContract(any(ContractLoginRequest.class))).thenReturn(authResponse);
 
-        mockMvc.perform(post("/v1/auth/login/contract")
+        mockMvc.perform(post("/api/v1/auth/login/contract")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(contractLoginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_token").value("access-token"));
+                .andExpect(jsonPath("$.accessToken").value("access-token"));
     }
 
     @Test
     void verify_ValidCode_ReturnsAuthResponse() throws Exception {
-        mockMvc.perform(post("/v1/auth/verify")
+        mockMvc.perform(post("/api/v1/auth/verify")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(verificationRequest)))
@@ -150,7 +150,7 @@ class AuthControllerTest {
     @Test
     @WithMockUser
     void logout_AuthenticatedUser_ReturnsSuccess() throws Exception {
-        mockMvc.perform(post("/v1/auth/logout")
+        mockMvc.perform(post("/api/v1/auth/logout")
                 .with(csrf())
                 .header("Authorization", "Bearer access-token"))
                 .andExpect(status().isOk())
@@ -161,11 +161,11 @@ class AuthControllerTest {
     void refresh_ValidToken_ReturnsNewTokens() throws Exception {
         when(authService.refreshToken("refresh-token")).thenReturn(authResponse);
 
-        mockMvc.perform(post("/v1/auth/refresh")
+        mockMvc.perform(post("/api/v1/auth/refresh")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"refresh_token\":\"refresh-token\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_token").value("access-token"));
+                .andExpect(jsonPath("$.accessToken").value("access-token"));
     }
 }
