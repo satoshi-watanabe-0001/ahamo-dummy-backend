@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/options")
+@RequestMapping("/api/v1/options")
 @RequiredArgsConstructor
 public class OptionController {
     
